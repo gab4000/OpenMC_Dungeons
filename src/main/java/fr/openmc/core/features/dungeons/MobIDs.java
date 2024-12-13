@@ -1,0 +1,83 @@
+package fr.openmc.core.features.dungeons;
+
+import lombok.Getter;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
+
+@Getter
+public enum MobIDs {
+
+    ZOMBIE("zombie", EntityType.ZOMBIE, 10, Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE, Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS, Material.DIAMOND_SWORD,null,0,null,0,null,0,null,0,null,0),
+    SKELETON("skeleton", EntityType.SKELETON, 10, null, null, null, null, Material.BOW, null, 0, null, 0, null, 0, null, 0, null, 0 ),
+    ;
+
+    private final String mobName;
+    private final EntityType entity;
+    private final int health;
+    private final Material helmet;
+    private final Material chestplate;
+    private final Material leggings;
+    private final Material boots;
+    private final Material weapon;
+    private final Enchantment helmetEnchantment;
+    private final int helmetLevel;
+    private final Enchantment chestplateEnchantment;
+    private final int chestplateLevel;
+    private final Enchantment leggingsEnchantment;
+    private final int leggingsLevel;
+    private final Enchantment bootsEnchantment;
+    private final int bootsLevel;
+    private final Enchantment weaponEnchantment;
+    private final int weaponLevel;
+
+    MobIDs (String mobName, EntityType entity, int health, Material helmet, Material chestplate, Material leggings, Material boots, Material weapon, Enchantment helmetEnchantment, int helmetLevel, Enchantment chestplateEnchantment, int chestplateLevel, Enchantment leggingsEnchantment, int leggingsLevel, Enchantment bootsEnchantment, int bootsLevel, Enchantment weaponEnchantment, int weaponLevel) {
+
+        this.mobName = mobName;
+        this.entity = entity;
+        this.health = health;
+        this.helmet = helmet;
+        this.chestplate = chestplate;
+        this.leggings = leggings;
+        this.boots = boots;
+        this.weapon = weapon;
+        this.helmetEnchantment = helmetEnchantment;
+        this.helmetLevel = helmetLevel;
+        this.chestplateEnchantment = chestplateEnchantment;
+        this.chestplateLevel = chestplateLevel;
+        this.leggingsEnchantment = leggingsEnchantment;
+        this.leggingsLevel = leggingsLevel;
+        this.bootsEnchantment = bootsEnchantment;
+        this.bootsLevel = bootsLevel;
+        this.weaponEnchantment = weaponEnchantment;
+        this.weaponLevel = weaponLevel;
+
+    }
+
+    public static boolean isValidMobName(String mobName) {
+        for (MobIDs mob : values()) {
+            if (mob.mobName.equalsIgnoreCase(mobName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static EntityType getMobByName(String mobName) {
+        for (MobIDs mob : values()) {
+            if (mob.mobName.equalsIgnoreCase(mobName)) {
+                return mob.getEntity();
+            }
+        }
+        return null;
+    }
+
+    public static MobIDs EnumMobByName(String mobName) { // TODO a tester si il y a tjr l'erreur avec le spawn du mob
+        for (MobIDs mob : values()) {
+            if (mob.mobName.equalsIgnoreCase(mobName)) {
+                return mob;
+            }
+        }
+        return null;
+    }
+}

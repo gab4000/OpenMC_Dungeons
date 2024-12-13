@@ -1,0 +1,56 @@
+# exemple de ce qui il y a dans le dungeon.yml + fichier de référence pour la création ou la mise a jour du dungeon.yml
+
+# /!\
+# Les changements ( exemple : lord de l'ajout d'un nouveu donjon ) sont à effectuer ici puis si aucun problème n'est détecter ceci seront importer dans le yml depuis la commande /d yml update
+# Pour la création de donjons :
+# - modéliser votre donjon ( celui-ci pourra être voté )
+# - la ou il y a un spawn_point de mob, mettre un block de votre choix ( oublier pas de dire quel est le block assigner au spawn_point de mob )
+# - block d'or pour indiquer le spawn principale du donjons ( la ou les joueurs apparaissent ) et un block de diamand pour la fin ( la ou les joueurs finissent le donjon )
+# - INTERDIT aux messages NSFW ( not safe for work ( vulgaire ou choquant ) ) /!\ si un message de ce type est découvert ATTAQUE EN JUSTICE ( une plainte peut être déposer contre vous ) /!\
+# /!\
+
+# dungeon:
+ # mob_spawn: # ici les spawn_point des mobs des donjons
+ #   spawn_point1:
+ #     activated: true # savoir si la zone a déjà été activer ou non
+ #     mob: zombie
+ #     x: 0.0 # coordonée X du point de spawn et de l'origine du mobs
+ #     y: 64.0 # coordonée Y du point de spawn et de l'origine du mobs
+ #     z: 0.0 # coordonée Z du point de spawn et de l'origine du mobs
+
+ # dungeon_spawn:
+ #   dungeon_1_places: # représente les places dans un donjons, ici il y a les place pour le donjons 1 [ à mettre manuellement ]
+ #     '1': # repésente une place/une copy du donjons ( ici c'est la place 1/la copy 1 du donjons 1 ) [ à mettre manuellement ]
+ #       available: true # savoir si il est utilisable ou non [ à mettre manuellement en "true" quand une place/copy est créée ]
+ #       spawn_co: 10, 10, 10 # les cordonnées du point de téléporation à celui-ci [ à mettre manuellement ]
+
+ # team: # stockage des teams
+ #   Nocolm: # créateur de la team
+ #     player_in_team: # joueurs dans la team ( le créateur est aussi dedans ), limiter a 4 joueurs
+ #       - Nocolm
+ #       - Nocolm
+ #       - Nocolm
+ #       - Nocolm
+
+dungeon:
+  mob_spawn:
+    spawn_point1:
+      activated: true
+      mob: zombie
+      x: 4.0
+      y: 64.0
+      z: 4.0
+    spawn_point2:
+      activated: true
+      mob: skeleton
+      x: 4.0
+      y: 64.0
+      z: 4.0
+
+  dungeon_spawn:
+    dungeon_1_places:
+      '1':
+        available: true
+        spawn_co: 10, 10, 10
+
+  team: {}
