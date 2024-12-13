@@ -53,7 +53,7 @@ public class DungeonsCommands {
         if (!file.exists()) {
             try {
                 file.createNewFile();
-                updateDungeonYML(35);
+                updateDungeonYML();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -365,7 +365,7 @@ public class DungeonsCommands {
     @CommandPermission("omc.admin.commands.dungeon.yml.update")
     public void updateImportDungeonYML () {
         //TODO importer les données du yml de "resources"
-        updateDungeonYML(35);
+        updateDungeonYML();
     }
 
     @Subcommand("yml backup")
@@ -487,32 +487,30 @@ public class DungeonsCommands {
         }
     }
 
-    public void updateDungeonYML(int startLine) {
+    public void updateDungeonYML() {
         try {
 
             Reader resourceReader = new InputStreamReader(plugin.getResource("dungeon.yml"));
             FileConfiguration resourceConfig = YamlConfiguration.loadConfiguration(resourceReader);
 
-            if (file.exists()) {
+            if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 plugin.saveResource("dungeon.yml", false);
             }
+
             FileConfiguration dataConfig = YamlConfiguration.loadConfiguration(file);
 
-            int currentLine = 0;
             for (String key : resourceConfig.getKeys(true)) {
-                currentLine++;
-                if (currentLine >= startLine) {
-                    dataConfig.set(key, resourceConfig.get(key));
-                }
+                dataConfig.set(key, resourceConfig.get(key));
             }
 
             dataConfig.save(file);
-            listener.reload();
             plugin.getLogger().info("Dungeon configuration updated starting");
 
+            resourceReader.close();
+
         } catch (Exception e) {
-            plugin.getLogger().severe("Error while copying dungeon.yml: " + e.getMessage());
+            plugin.getLogger().severe("Error while updating dungeon.yml: " + e.getMessage());
         }
     }
 
