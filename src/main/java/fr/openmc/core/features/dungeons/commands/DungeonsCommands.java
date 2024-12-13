@@ -34,6 +34,7 @@ public class DungeonsCommands {
     private final Map<UUID, UUID> invitations = new HashMap<>();
     private final HashMap<UUID, Location> lastOverworldLocations = new HashMap<>();
     private final OMCPlugin plugin;
+    Map<UUID, UUID> playerInDungeon = new HashMap<>(); //TODO ajouter le ou les joueur d'une team ou non entrant dans un donjon dans la HashMap
     MobSpawnZoneListener listener;
 
     FileConfiguration config;
@@ -161,6 +162,8 @@ public class DungeonsCommands {
 
         String playerName = player.getName();
         String inviteName = invite.getName();
+        UUID inviterUUID = playerInDungeon.get(invite.getUniqueId());
+        UUID playerUUID = playerInDungeon.get(player.getUniqueId());
 
         for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
             String path = basepath + team + "player_in_team.";
@@ -200,6 +203,16 @@ public class DungeonsCommands {
             return;
         }
 
+        if (inviterUUID != null){
+            MessagesManager.sendMessageType(player,"§4" + inviteName + " est dans un donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
+
+        if (playerUUID != null){
+            MessagesManager.sendMessageType(player,"§4Vous ne pouvez inviter personne car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
+
         invitations.put(player.getUniqueId(), invite.getUniqueId());
         MessagesManager.sendMessageType(player," Invitation dans la team envoyer a " + inviteName, Prefix.DUNGEON, MessageType.SUCCESS, false);
         MessagesManager.sendMessageType(invite,playerName + " vous invite dans ça team ( /team accept : pour rejoindre, sinon /team deny : pour refuser )" + inviteName, Prefix.DUNGEON, MessageType.SUCCESS, false);
@@ -208,6 +221,12 @@ public class DungeonsCommands {
     @Subcommand("team accept")
     @Description("accepter l'invitation")
     public void onTeamInviteAccept (Player player) {
+
+        UUID playerUUID = playerInDungeon.get(player.getUniqueId());
+        if (playerUUID != null){
+            MessagesManager.sendMessageType(player,"§4Vous ne pouvez pas rejoindre une team car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
 
         UUID inviterUUID = invitations.get(player.getUniqueId());
         if (inviterUUID == null) {
@@ -394,6 +413,10 @@ public class DungeonsCommands {
 
     private void leaveTeam (String teamName) {
         String basepath = "dungeon." + "team.";
+        if (config.getBoolean(basepath + ".in_dungeon")){
+            Player player = Bukkit.getPlayer(teamName);
+            player.sendMessage("Tu es dans un donjon tu ne peux pas quitter la team");
+        }
         if (config.getConfigurationSection(basepath).contains(teamName)) {
             String path = basepath + teamName + ".player_in_team";
 
