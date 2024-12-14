@@ -6,7 +6,6 @@ import fr.openmc.core.features.city.CityManager;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
-import fr.openmc.core.features.skills.SkillsManager;
 import fr.openmc.core.listeners.ListenersManager;
 import fr.openmc.core.utils.LuckPermsAPI;
 import fr.openmc.core.utils.database.DatabaseManager;
