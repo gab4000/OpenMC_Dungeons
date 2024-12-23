@@ -1,13 +1,12 @@
 package fr.openmc.core.features.dungeons.listeners;
 
 import fr.openmc.core.OMCPlugin;
+import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.dungeons.MobIDs;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -15,28 +14,17 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
+import static fr.openmc.core.features.dungeons.data.DungeonManager.config;
 
 public class MobSpawnZoneListener implements Listener {
 
-    private FileConfiguration config;
-    private final File file;
     private final OMCPlugin plugin;
     World dungeons = Bukkit.getWorld("Dungeons");
 
     public MobSpawnZoneListener(OMCPlugin plugin) {
         this.plugin = plugin;
-
-        file = new File(plugin.getDataFolder(), "dungeon.yml");
-        if (!file.exists()) {
-            return;
-        }
-        config = YamlConfiguration.loadConfiguration(file);
     }
 
     @EventHandler
@@ -70,7 +58,7 @@ public class MobSpawnZoneListener implements Listener {
                 config.set(path + ".activated", false);
                 player.sendMessage(entity);
                 spawnMob(zoneLocation, entity);
-                saveConfig();
+                DungeonManager.saveReloadConfig();
                 player.sendMessage("tout les tests sont bon !"); // message debug
             }
         }
@@ -114,15 +102,6 @@ public class MobSpawnZoneListener implements Listener {
 //        mob.getEquipment().setLeggings(leggings);
 //        mob.getEquipment().setBoots(boots);
 //        mob.getEquipment().setItemInMainHand(weapon);
-    }
-
-    private void saveConfig() {
-        try {
-            config.save(file);
-            config = YamlConfiguration.loadConfiguration(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void reload () {

@@ -18,11 +18,11 @@
  #     y: 64.0 # coordonée Y du point de spawn et de l'origine du mobs
  #     z: 0.0 # coordonée Z du point de spawn et de l'origine du mobs
 
- # dungeon_spawn:
- #   dungeon_1_places: # représente les places dans un donjons, ici il y a les place pour le donjons 1 [ à mettre manuellement ]
+ # dungeon_places:
+ #   dungeon_1: # représente les places dans un donjons, ici il y a les place pour le donjons 1 [ à mettre manuellement et 1 a remplacer par le nom du dongeon ]
  #     '1': # repésente une place/une copy du donjons ( ici c'est la place 1/la copy 1 du donjons 1 ) [ à mettre manuellement ]
  #       available: true # savoir si il est utilisable ou non [ à mettre manuellement en "true" quand une place/copy est créée ]
- #       spawn_co: 10, 10, 10 # les cordonnées du point de téléporation à celui-ci [ à mettre manuellement ]
+ #       spawn_co: Dungeon, 10, 10, 10 # les cordonnées du point de téléporation à celui-ci [ à mettre manuellement et laisser Dungeon pour le monde]
 
  # team: # stockage des teams
  #   Nocolm: # créateur de la team
@@ -31,6 +31,12 @@
  #       - Nocolm
  #       - Nocolm
  #       - Nocolm
+ #
+ #players_in_dungeon :
+ #  Nocolm :
+ #    team : si le joueur est dans une team ou non
+ #    dungeon : nom du donjon
+ #    places : la place [ ex : '1' ]
 
 dungeon:
   mob_spawn:
@@ -47,10 +53,12 @@ dungeon:
       y: 64.0
       z: 4.0
 
-  dungeon_spawn:
-    dungeon_1_places:
+  dungeon_places:
+    dungeon_training:
       '1':
         available: true
-        spawn_co: 10, 10, 10
+        spawn_co: Dungeon, 10, 10, 10
 
   team: {}
+
+  players_in_dungeon : {}

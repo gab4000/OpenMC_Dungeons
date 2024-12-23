@@ -1,8 +1,9 @@
 package fr.openmc.core.features.dungeons.commands;
 
 import fr.openmc.core.OMCPlugin;
-import fr.openmc.core.features.dungeons.MobIDs;
+import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.dungeons.data.PlayerDataSaver;
+import fr.openmc.core.features.dungeons.MobIDs;
 import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
@@ -24,6 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+import static fr.openmc.core.features.dungeons.data.DungeonManager.config;
+import static fr.openmc.core.features.dungeons.data.DungeonManager.file;
 import static fr.openmc.core.features.dungeons.listeners.CreatorWandListener.MobPos;
 
 @Command({"dungeon", "dungeons", "donjon", "donjons", "d"})
@@ -34,12 +37,9 @@ public class DungeonsCommands {
     private final Map<UUID, UUID> invitations = new HashMap<>();
     private final HashMap<UUID, Location> lastOverworldLocations = new HashMap<>();
     private final OMCPlugin plugin;
-    Map<UUID, UUID> playerInDungeon = new HashMap<>(); //TODO ajouter le ou les joueur d'une team ou non entrant dans un donjon dans la HashMap
     MobSpawnZoneListener listener;
 
-    FileConfiguration config;
     FileConfiguration backupConfig;
-    File file;
     File backupFile;
 
     public DungeonsCommands(OMCPlugin plugin) {
@@ -48,19 +48,7 @@ public class DungeonsCommands {
         this.playerDataSaver = new PlayerDataSaver(plugin);
         listener = new MobSpawnZoneListener(plugin);
 
-        file = new File(plugin.getDataFolder(), "dungeon.yml");
         this.backupFile = new File(plugin.getDataFolder(), "dungeon_backup.yml");
-
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-                updateDungeonYML();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        config = YamlConfiguration.loadConfiguration(file);
         backupConfig = YamlConfiguration.loadConfiguration(backupFile);
     }
 
@@ -90,6 +78,11 @@ public class DungeonsCommands {
     @Subcommand("exit")
     @Description("Retourner dans l'Overworld")
     public void onCommandExit(Player player) {
+
+        if (playerIsInDungeon(player)) {
+            MessagesManager.sendMessageType(player,"§4Vous êtes en plein donjon impossible de retourner dans l'overworld", Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
 
         World dungeons = Bukkit.getWorld("Dungeons");
 
@@ -124,6 +117,12 @@ public class DungeonsCommands {
     @Subcommand("team create")
     @Description("créer une team")
     public void onTeamCreate(Player player) {
+
+        if (playerIsInDungeon(player)) {
+            MessagesManager.sendMessageType(player,"§4Vous êtes en plein donjon impossible de créer une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
+
         String playerName = player.getName();
         String basepath = "dungeon." + "team.";
 
@@ -162,8 +161,6 @@ public class DungeonsCommands {
 
         String playerName = player.getName();
         String inviteName = invite.getName();
-        UUID inviterUUID = playerInDungeon.get(invite.getUniqueId());
-        UUID playerUUID = playerInDungeon.get(player.getUniqueId());
 
         for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
             String path = basepath + team + "player_in_team.";
@@ -203,12 +200,12 @@ public class DungeonsCommands {
             return;
         }
 
-        if (inviterUUID != null){
+        if (playerIsInDungeon(invite)){
             MessagesManager.sendMessageType(player,"§4" + inviteName + " est dans un donjon", Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
-        if (playerUUID != null){
+        if (playerIsInDungeon(player)){
             MessagesManager.sendMessageType(player,"§4Vous ne pouvez inviter personne car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
@@ -222,8 +219,7 @@ public class DungeonsCommands {
     @Description("accepter l'invitation")
     public void onTeamInviteAccept (Player player) {
 
-        UUID playerUUID = playerInDungeon.get(player.getUniqueId());
-        if (playerUUID != null){
+        if (playerIsInDungeon(player)){
             MessagesManager.sendMessageType(player,"§4Vous ne pouvez pas rejoindre une team car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
@@ -270,6 +266,12 @@ public class DungeonsCommands {
     @Subcommand("team leave")
     @Description("quitte une team")
     public void onTeamLeave(Player player) {
+
+        if (playerIsInDungeon(player)){
+            MessagesManager.sendMessageType(player,"§4Vous ne pouvez pas quittez une team car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
+
         String playerName = player.getName();
         String basepath = "dungeon." + "team.";
         boolean inTeam = false;
@@ -375,7 +377,7 @@ public class DungeonsCommands {
 
         String path = "dungeon." + "mob_spawn." + spawn_point;
         config.set(path, null);
-        save();
+        DungeonManager.saveReloadConfig();
         listener.reload();
     }
 
@@ -399,7 +401,7 @@ public class DungeonsCommands {
         List<String>playerInTeam = new ArrayList<>();
         playerInTeam.add(invite);
         config.set(path + ".player_in_team", playerInTeam);
-        save();
+        DungeonManager.saveReloadConfig();
 
     }
 
@@ -408,15 +410,15 @@ public class DungeonsCommands {
         List<String>playerInTeam = new ArrayList<>();
         playerInTeam.add(teamName);
         config.set(path + ".player_in_team", playerInTeam);
-        save();
+        DungeonManager.saveReloadConfig();
     }
 
-    private void leaveTeam (String teamName) {
+    public void leaveTeam (String teamName) {
         String basepath = "dungeon." + "team.";
-        if (config.getBoolean(basepath + ".in_dungeon")){
-            Player player = Bukkit.getPlayer(teamName);
-            player.sendMessage("Tu es dans un donjon tu ne peux pas quitter la team");
-        }
+        //if (config.getBoolean(basepath + ".in_dungeon")){
+        //    Player player = Bukkit.getPlayer(teamName);
+        //    player.sendMessage("Tu es dans un donjon tu ne peux pas quitter la team");
+        //}
         if (config.getConfigurationSection(basepath).contains(teamName)) {
             String path = basepath + teamName + ".player_in_team";
 
@@ -430,7 +432,7 @@ public class DungeonsCommands {
             config.set(basepath + teamName, null);
             Player player = Bukkit.getPlayer(teamName);
             MessagesManager.sendMessageType(player,"§4vous avez dissous votre team", Prefix.DUNGEON, MessageType.INFO, false);
-            save();
+            DungeonManager.saveReloadConfig();
             return;
         }
 
@@ -440,10 +442,18 @@ public class DungeonsCommands {
             //TODO Envoyer un message au joueur de la team pour dire qu'un' joueur a quitter celle-ci
 
             if (config.getStringList(path).contains(teamName)) {
+
+                for (String playerInTeam : config.getStringList(path)) {
+                    Player player = Bukkit.getPlayer(playerInTeam);
+                    if ( player != null && !player.getName().equals(teamName)){
+                        MessagesManager.sendMessageType(player,"§4" + teamName + " a quitté la team", Prefix.DUNGEON, MessageType.INFO, false);
+                    }
+                }
+
                 List<String> playerInTeam = config.getStringList(path);
                 playerInTeam.remove(teamName);
                 config.set(path, playerInTeam);
-                save();
+                DungeonManager.saveReloadConfig();
                 break;
             }
         }
@@ -497,17 +507,8 @@ public class DungeonsCommands {
             config.set(path + ".z", z);
         }
 
-        save();
+        DungeonManager.saveReloadConfig();
         listener.reload();
-    }
-
-    private void save() {
-        try {
-            config.save(file);
-            config = YamlConfiguration.loadConfiguration(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void updateDungeonYML() {
@@ -528,6 +529,7 @@ public class DungeonsCommands {
             }
 
             dataConfig.save(file);
+            config = YamlConfiguration.loadConfiguration(file);
             plugin.getLogger().info("Dungeon configuration updated starting");
 
             resourceReader.close();
@@ -556,4 +558,13 @@ public class DungeonsCommands {
             System.err.println("ERROR during the creation of the backup : " + e.getMessage());
         }
     }
+
+    boolean playerIsInDungeon (Player player) {
+        return config.getConfigurationSection("dungeon." + "players_in_dungeon." + player.getName()) != null;
+    }
+
+    //if (config.getConfigurationSection("dungeon." + "players_in_dungeon." + player.getName()) == null){
+    //            return false;
+    //        }
+    //        return true;
 }

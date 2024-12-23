@@ -14,19 +14,16 @@ import lombok.Getter;
 import net.luckperms.api.LuckPerms;
 import net.raidstone.wgevents.WorldGuardEvents;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.sql.SQLException;
+import static fr.openmc.core.features.dungeons.data.DungeonManager.config;
 
 public final class OMCPlugin extends JavaPlugin {
     @Getter static OMCPlugin instance;
     @Getter static FileConfiguration configs;
     private DatabaseManager dbManager;
-    FileConfiguration dungeonConfig;
-    File dungeonFile;
 
     public LuckPerms lpApi;
 
@@ -37,7 +34,6 @@ public final class OMCPlugin extends JavaPlugin {
         /* CONFIG */
         saveDefaultConfig();
         configs = this.getConfig();
-        dungeonFile = new File(instance.getDataFolder(), "dungeon.yml");
 
         /* EXTERNALS */
         MenuLib.init(this);
@@ -64,8 +60,12 @@ public final class OMCPlugin extends JavaPlugin {
         } catch (SQLException e) {
             getLogger().severe("Impossible de fermer la connexion à la base de données");
         }
-        dungeonConfig = YamlConfiguration.loadConfiguration(dungeonFile);
-        dungeonConfig.set("dungeon." + "team.", null);
+
+        if (config.getConfigurationSection("dungeon." + "team.") != null){ //TODO probleme ici : "path is null"
+            //config.set("dungeon." + "team.", null);
+            getLogger().info("Dungeon Team reset");
+        }
+
         getLogger().info("Plugin désactivé");
     }
 
