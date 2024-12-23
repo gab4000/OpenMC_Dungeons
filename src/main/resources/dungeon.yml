@@ -34,7 +34,6 @@
  #
  #players_in_dungeon :
  #  Nocolm :
- #    team : si le joueur est dans une team ou non
  #    dungeon : nom du donjon
  #    places : la place [ ex : '1' ]
 
