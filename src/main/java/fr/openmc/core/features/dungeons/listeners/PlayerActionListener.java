@@ -3,7 +3,7 @@ package fr.openmc.core.features.dungeons.listeners;
 import fr.openmc.core.OMCPlugin;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.dungeons.commands.DungeonsCommands;
-import fr.openmc.core.features.dungeons.menus.ExploreurMenu;
+import fr.openmc.core.features.dungeons.menus.ExplorerMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -34,7 +34,7 @@ public class PlayerActionListener implements Listener {
 
         if (entity != null){
             if (entity.getCustomName().equals("test")){
-                ExploreurMenu menu = new ExploreurMenu(player, plugin);
+                ExplorerMenu menu = new ExplorerMenu(player, plugin);
                 menu.open();
             }
         }
