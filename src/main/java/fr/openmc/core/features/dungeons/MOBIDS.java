@@ -6,7 +6,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 
 @Getter
-public enum MobIDs {
+public enum MOBIDS {
 
     ZOMBIE("zombie", EntityType.ZOMBIE, 10, Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE, Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS, Material.DIAMOND_SWORD,null,0,null,0,null,0,null,0,null,0),
     SKELETON("skeleton", EntityType.SKELETON, 10, null, null, null, null, Material.BOW, null, 0, null, 0, null, 0, null, 0, null, 0 ),
@@ -30,8 +30,8 @@ public enum MobIDs {
     private final int bootsLevel;
     private final Enchantment weaponEnchantment;
     private final int weaponLevel;
-
-    MobIDs (String mobName, EntityType entity, int health, Material helmet, Material chestplate, Material leggings, Material boots, Material weapon, Enchantment helmetEnchantment, int helmetLevel, Enchantment chestplateEnchantment, int chestplateLevel, Enchantment leggingsEnchantment, int leggingsLevel, Enchantment bootsEnchantment, int bootsLevel, Enchantment weaponEnchantment, int weaponLevel) {
+    
+    MOBIDS (String mobName, EntityType entity, int health, Material helmet, Material chestplate, Material leggings, Material boots, Material weapon, Enchantment helmetEnchantment, int helmetLevel, Enchantment chestplateEnchantment, int chestplateLevel, Enchantment leggingsEnchantment, int leggingsLevel, Enchantment bootsEnchantment, int bootsLevel, Enchantment weaponEnchantment, int weaponLevel) {
 
         this.mobName = mobName;
         this.entity = entity;
@@ -55,7 +55,7 @@ public enum MobIDs {
     }
 
     public static boolean isValidMobName(String mobName) {
-        for (MobIDs mob : values()) {
+        for (MOBIDS mob : values()) {
             if (mob.mobName.equalsIgnoreCase(mobName)) {
                 return true;
             }
@@ -64,7 +64,7 @@ public enum MobIDs {
     }
 
     public static EntityType getMobByName(String mobName) {
-        for (MobIDs mob : values()) {
+        for (MOBIDS mob : values()) {
             if (mob.mobName.equalsIgnoreCase(mobName)) {
                 return mob.getEntity();
             }
@@ -72,8 +72,8 @@ public enum MobIDs {
         return null;
     }
 
-    public static MobIDs EnumMobByName(String mobName) { // TODO a tester si il y a tjr l'erreur avec le spawn du mob
-        for (MobIDs mob : values()) {
+    public static MOBIDS EnumMobByName(String mobName) { // TODO a tester si il y a tjr l'erreur avec le spawn du mob
+        for (MOBIDS mob : values()) {
             if (mob.mobName.equalsIgnoreCase(mobName)) {
                 return mob;
             }

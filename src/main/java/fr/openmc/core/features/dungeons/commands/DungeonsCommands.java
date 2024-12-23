@@ -1,9 +1,9 @@
 package fr.openmc.core.features.dungeons.commands;
 
 import fr.openmc.core.OMCPlugin;
+import fr.openmc.core.features.dungeons.MOBIDS;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.dungeons.data.PlayerDataSaver;
-import fr.openmc.core.features.dungeons.MobIDs;
 import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
@@ -324,8 +324,8 @@ public class DungeonsCommands {
     public void onZoneListMob (Player player) { //TODO modifier la liste est pas bonne
         List<String> mobList = new ArrayList<>();
 
-        for (MobIDs type : MobIDs.values()) {
-            mobList.add(MobIDs.valueOf(String.valueOf(type)).getMobName());
+        for (MOBIDS type : MOBIDS.values()) {
+            mobList.add(MOBIDS.valueOf(String.valueOf(type)).getMobName());
         }
 
         if (mobList.isEmpty()) {
@@ -351,7 +351,7 @@ public class DungeonsCommands {
             return;
         }
 
-        if (!MobIDs.isValidMobName(mob)){ //TODO modifier pour vérifier si le mob à ajouter existe avec une énumération répertoriant les mobs
+        if (! MOBIDS.isValidMobName(mob)){ //TODO modifier pour vérifier si le mob à ajouter existe avec une énumération répertoriant les mobs
             player.sendMessage("ce mob n'existe pas");
             return;
         }

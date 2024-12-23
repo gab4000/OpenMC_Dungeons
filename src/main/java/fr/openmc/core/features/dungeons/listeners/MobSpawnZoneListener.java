@@ -1,8 +1,8 @@
 package fr.openmc.core.features.dungeons.listeners;
 
 import fr.openmc.core.OMCPlugin;
+import fr.openmc.core.features.dungeons.MOBIDS;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
-import fr.openmc.core.features.dungeons.MobIDs;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
@@ -92,7 +92,7 @@ public class MobSpawnZoneListener implements Listener {
 //        boots.setItemMeta(bootsMeta);
 //        weapon.setItemMeta(weaponMeta);
 
-        EntityType entityType = MobIDs.getMobByName(entity);
+        EntityType entityType = MOBIDS.getMobByName(entity);
         LivingEntity mob = (LivingEntity) dungeons.spawnEntity(location, entityType);
 
 //        // attribute set

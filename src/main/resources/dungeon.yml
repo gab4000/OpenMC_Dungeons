@@ -1,41 +1,41 @@
-# exemple de ce qui il y a dans le dungeon.yml + fichier de référence pour la création ou la mise a jour du dungeon.yml
+# Exemple de ce qui il y a dans le dungeon.yml + fichier de référence pour la création ou la mise a jour du dungeon.yml
 
 # /!\
-# Les changements ( exemple : lord de l'ajout d'un nouveu donjon ) sont à effectuer ici puis si aucun problème n'est détecter ceci seront importer dans le yml depuis la commande /d yml update
+# Les changements (exemple : lors de l'ajout d'un nouveu donjon) sont à effectuer ici puis, si aucun problème n'est détecté, ceci seront importés dans le yml depuis la commande /d yml update
 # Pour la création de donjons :
-# - modéliser votre donjon ( celui-ci pourra être voté )
-# - la ou il y a un spawn_point de mob, mettre un block de votre choix ( oublier pas de dire quel est le block assigner au spawn_point de mob )
-# - block d'or pour indiquer le spawn principale du donjons ( la ou les joueurs apparaissent ) et un block de diamand pour la fin ( la ou les joueurs finissent le donjon )
-# - INTERDIT aux messages NSFW ( not safe for work ( vulgaire ou choquant ) ) /!\ si un message de ce type est découvert ATTAQUE EN JUSTICE ( une plainte peut être déposer contre vous ) /!\
+#   - modéliser votre donjon (celui-ci pourra être voté)
+#   - la ou il y a un spawn_point de mob, mettre un block de votre choix (oubliew pas de dire quel est le block assigné au spawn_point de mob)
+#   - block d'or pour indiquer le spawn principal du donjon (là ou les joueurs apparaissent) et un block de diamant pour la fin (là ou les joueurs finissent le donjon)
+#   - INTERDIT aux messages NSFW (Not Safe For Work (vulgaire ou choquant)) /!\ si un message de ce type est découvert, ATTAQUE EN JUSTICE (une plainte peut être déposée contre vous) /!\
 # /!\
 
 # dungeon:
- # mob_spawn: # ici les spawn_point des mobs des donjons
+ # mob_spawn: # Ici les spawn_point des mobs des donjons
  #   spawn_point1:
- #     activated: true # savoir si la zone a déjà été activer ou non
+ #     activated: true # Savoir si la zone a déjà été activée ou non
  #     mob: zombie
- #     x: 0.0 # coordonée X du point de spawn et de l'origine du mobs
- #     y: 64.0 # coordonée Y du point de spawn et de l'origine du mobs
- #     z: 0.0 # coordonée Z du point de spawn et de l'origine du mobs
+ #     x: 0.0 # Coordonée X du point de spawn et de l'origine du mob
+ #     y: 64.0 # Coordonée Y du point de spawn et de l'origine du mob
+ #     z: 0.0 # Coordonée Z du point de spawn et de l'origine du mob
 
- # dungeon_places:
- #   dungeon_1: # représente les places dans un donjons, ici il y a les place pour le donjons 1 [ à mettre manuellement et 1 a remplacer par le nom du dongeon ]
- #     '1': # repésente une place/une copy du donjons ( ici c'est la place 1/la copy 1 du donjons 1 ) [ à mettre manuellement ]
- #       available: true # savoir si il est utilisable ou non [ à mettre manuellement en "true" quand une place/copy est créée ]
- #       spawn_co: Dungeon, 10, 10, 10 # les cordonnées du point de téléporation à celui-ci [ à mettre manuellement et laisser Dungeon pour le monde]
+ # dungeon_spawn:
+ #   dungeon_1_places: # Représente les places dans un donjon, ici il y a les place pour le donjon 1 [ à mettre manuellement et 1 a remplacer par le nom du donjon ]
+ #     '1': # Repésente une place/une copie du donjon (ici c'est la place 1/la copie 1 du donjon 1) [ à mettre manuellement ]
+ #       available: true # Savoir si il est utilisable ou non [ à mettre manuellement en "true" quand une place/copie est créée ]
+ #       spawn_co: 10, 10, 10 # Cordonnées du point de téléporation à celui-ci [ à mettre manuellement et laisser Dungeon pour le monde]
 
- # team: # stockage des teams
- #   Nocolm: # créateur de la team
- #     player_in_team: # joueurs dans la team ( le créateur est aussi dedans ), limiter a 4 joueurs
+ # team: # Stockage des teams
+ #   Nocolm: # Créateur de la team
+ #     player_in_team: # Joueurs dans la team (le créateur est aussi dedans), limité a 4 joueurs
  #       - Nocolm
  #       - Nocolm
  #       - Nocolm
  #       - Nocolm
  #
- #players_in_dungeon :
- #  Nocolm :
- #    dungeon : nom du donjon
- #    places : la place [ ex : '1' ]
+ # players_in_dungeon :
+ #   Nocolm :
+ #     dungeon : nom du donjon
+ #     places : la place [ ex : '1' ]
 
 dungeon:
   mob_spawn:
@@ -54,7 +54,7 @@ dungeon:
 
   dungeon_places:
     dungeon_training:
-      '1':
+      '0':
         available: true
         spawn_co: Dungeon, 10, 10, 10
 

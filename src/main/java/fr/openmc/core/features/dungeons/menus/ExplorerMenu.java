@@ -19,12 +19,12 @@ import java.util.Map;
 
 import static fr.openmc.core.features.dungeons.data.DungeonManager.config;
 
-public class ExploreurMenu extends Menu {
+public class ExplorerMenu extends Menu {
 
     OMCPlugin plugin;
     Player player;
 
-    public ExploreurMenu(Player player, OMCPlugin plugin) {
+    public ExplorerMenu(Player player, OMCPlugin plugin) {
         super(player);
         this.player = player;
         this.plugin = plugin;
@@ -49,8 +49,10 @@ public class ExploreurMenu extends Menu {
 
         map.put(13, new ItemBuilder(this, Material.PAPER, itemMeta -> {
             itemMeta.setDisplayName("Training dungeon");
-            tpAvailableDungeon(player, "dungeon_training"); //TODO mis icic pour test
-        }).setCloseButton());
+        }).setOnClick(inventoryClickEvent -> {
+            tpAvailableDungeon(player, "dungeon_training");
+            getOwner().closeInventory();
+        }));
 
         map.put(15, new ItemBuilder(this, Material.PAPER, itemMeta -> {
             itemMeta.setDisplayName("Dungeons");
