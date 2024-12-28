@@ -8,6 +8,7 @@ import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -71,7 +72,7 @@ public class DungeonsCommands {
                 player.sendMessage("Le dongeon n'a pas été trouvé.");
             }
         } else {
-            MessagesManager.sendMessageType(player,"§4Vous devez être dans l'overworld pour utiliser cette commande", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§4Vous devez être dans l'overworld pour utiliser cette commande"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
     }
 
@@ -80,7 +81,7 @@ public class DungeonsCommands {
     public void onCommandExit(Player player) {
 
         if (playerIsInDungeon(player)) {
-            MessagesManager.sendMessageType(player,"§4Vous êtes en plein donjon impossible de retourner dans l'overworld", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous êtes en plein donjon impossible de retourner dans l'overworld"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -103,7 +104,7 @@ public class DungeonsCommands {
                 player.sendMessage("L'overworld n'a pas été trouvé.");
             }
         } else {
-            MessagesManager.sendMessageType(player,"§4Vous devez être dans le donjon pour utiliser cette commande", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous devez être dans le donjon pour utiliser cette commande"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
     }
 
@@ -119,7 +120,7 @@ public class DungeonsCommands {
     public void onTeamCreate(Player player) {
 
         if (playerIsInDungeon(player)) {
-            MessagesManager.sendMessageType(player,"§4Vous êtes en plein donjon impossible de créer une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous êtes en plein donjon impossible de créer une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -135,16 +136,16 @@ public class DungeonsCommands {
             String path = basepath + team + "player_in_team.";
 
             if (config.getStringList(path).contains(playerName)) {
-                MessagesManager.sendMessageType(player,"§4tu es déjà dans une team", Prefix.DUNGEON, MessageType.ERROR, false);
+                MessagesManager.sendMessageType(player,Component.text("§4tu es déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
                 return;
             }
         }
 
         if (config.getConfigurationSection(basepath).contains(playerName)){
-            MessagesManager.sendMessageType(player,"§4Tu as déjà une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Tu as déjà une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
-        MessagesManager.sendMessageType(player,"team créer ! utiliser team invite pour inviter des joueur dans votre team", Prefix.DUNGEON, MessageType.SUCCESS, false);
+        MessagesManager.sendMessageType(player,Component.text("Team créée ! Utilisez team invite pour inviter des joueurs dans votre team"), Prefix.DUNGEON, MessageType.SUCCESS, false);
         createTeam(playerName);
     }
 
@@ -155,7 +156,7 @@ public class DungeonsCommands {
         String basepath = "dungeon." + "team.";
 
         if (config.getConfigurationSection(basepath) == null){
-            MessagesManager.sendMessageType(player,"§4Tu n'as pas de team ou n'es pas déjà dans une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas de team ou n'es pas déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -166,23 +167,23 @@ public class DungeonsCommands {
             String path = basepath + team + "player_in_team.";
 
             if (config.getStringList(path).contains(playerName)) {
-                MessagesManager.sendMessageType(player,"§4tu n'es pas le chef de ta team", Prefix.DUNGEON, MessageType.ERROR, false);
+                MessagesManager.sendMessageType(player,Component.text("§4tu n'es pas le chef de ta team"), Prefix.DUNGEON, MessageType.ERROR, false);
                 return;
             }
         }
 
         if (!config.getConfigurationSection(basepath).contains(playerName)){
-            MessagesManager.sendMessageType(player,"§4Tu n'as pas de team ou n'es pas déjà dans une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas de team ou n'es pas déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         if (playerName.equals(inviteName)){
-            MessagesManager.sendMessageType(player,"§4vous ne pouvez pas vous inviter dans votre team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous ne pouvez pas vous inviter dans votre team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         if (config.getStringList(basepath + playerName + "player_in_team.").size() == 4){
-            MessagesManager.sendMessageType(player,"§4Vous êtes déjà 4 dans votre équipe !", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous êtes déjà 4 dans votre équipe !"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -190,29 +191,29 @@ public class DungeonsCommands {
             String path = basepath + team + "player_in_team.";
 
             if (config.getStringList(path).contains(inviteName)) {
-                MessagesManager.sendMessageType(player,"§4le joueur est déjà dans une team", Prefix.DUNGEON, MessageType.ERROR, false);
+                MessagesManager.sendMessageType(player,Component.text("§4le joueur est déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
                 return;
             }
         }
 
         if (config.getConfigurationSection(basepath).contains(inviteName)) {
-            MessagesManager.sendMessageType(player,"§4le joueur est déjà dans une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4le joueur est déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         if (playerIsInDungeon(invite)){
-            MessagesManager.sendMessageType(player,"§4" + inviteName + " est dans un donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4" + inviteName + " est dans un donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         if (playerIsInDungeon(player)){
-            MessagesManager.sendMessageType(player,"§4Vous ne pouvez inviter personne car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous ne pouvez inviter personne car vous êtes en plein donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         invitations.put(player.getUniqueId(), invite.getUniqueId());
-        MessagesManager.sendMessageType(player," Invitation dans la team envoyer a " + inviteName, Prefix.DUNGEON, MessageType.SUCCESS, false);
-        MessagesManager.sendMessageType(invite,playerName + " vous invite dans ça team ( /team accept : pour rejoindre, sinon /team deny : pour refuser )" + inviteName, Prefix.DUNGEON, MessageType.SUCCESS, false);
+        MessagesManager.sendMessageType(player,Component.text(" Invitation dans la team envoyer a " + inviteName), Prefix.DUNGEON, MessageType.SUCCESS, false);
+        MessagesManager.sendMessageType(invite,Component.text(playerName + " vous invite dans ça team ( /team accept : pour rejoindre, sinon /team deny : pour refuser )" + inviteName), Prefix.DUNGEON, MessageType.SUCCESS, false);
     }
 
     @Subcommand("team accept")
@@ -220,26 +221,26 @@ public class DungeonsCommands {
     public void onTeamInviteAccept (Player player) {
 
         if (playerIsInDungeon(player)){
-            MessagesManager.sendMessageType(player,"§4Vous ne pouvez pas rejoindre une team car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Vous ne pouvez pas rejoindre une team car vous êtes en plein donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         UUID inviterUUID = invitations.get(player.getUniqueId());
         if (inviterUUID == null) {
-            MessagesManager.sendMessageType(player,"§4Tu n'as pas reçu d'invitation", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas reçu d'invitation"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         Player inviter = Bukkit.getPlayer(inviterUUID);
         if (inviter == null || !inviter.isOnline()) {
-            MessagesManager.sendMessageType(player,"§4Le joueur n'est plus en ligne", Prefix.DUNGEON, MessageType.INFO, false);
+            MessagesManager.sendMessageType(player,Component.text("§4Le joueur n'est plus en ligne"), Prefix.DUNGEON, MessageType.INFO, false);
             invitations.remove(player.getUniqueId());
             return;
         }
 
 
-        MessagesManager.sendMessageType(player,"Vous avez rejoind la team de " + inviter.getName() + " !", Prefix.DUNGEON, MessageType.SUCCESS, false);
-        MessagesManager.sendMessageType(inviter,player.getName() + " a rejoind votre team !", Prefix.DUNGEON, MessageType.SUCCESS, false);
+        MessagesManager.sendMessageType(player,Component.text("Vous avez rejoind la team de " + inviter.getName() + " !"), Prefix.DUNGEON, MessageType.SUCCESS, false);
+        MessagesManager.sendMessageType(inviter,Component.text(player.getName() + " a rejoind votre team !"), Prefix.DUNGEON, MessageType.SUCCESS, false);
         invitations.remove(player.getUniqueId());
         inviteAccept(inviter.getName(), player.getName());
     }
@@ -250,16 +251,16 @@ public class DungeonsCommands {
 
         UUID inviterUUID = invitations.get(player.getUniqueId());
         if (inviterUUID == null) {
-            MessagesManager.sendMessageType(player,"§4Tu n'as pas reçu d'invitation", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§4Tu n'as pas reçu d'invitation"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         Player inviter = Bukkit.getPlayer(inviterUUID);
         if (inviter != null && inviter.isOnline()) {
-            MessagesManager.sendMessageType(inviter,"§4" + player.getName() + "a refuser votre invitaion !", Prefix.DUNGEON, MessageType.INFO, false);
+            MessagesManager.sendMessageType(inviter, Component.text("§4" + player.getName() + "a refuser votre invitaion !"), Prefix.DUNGEON, MessageType.INFO, false);
         }
 
-        MessagesManager.sendMessageType(player,"§4Vous avez refusé l'invitation", Prefix.DUNGEON, MessageType.INFO, false);
+        MessagesManager.sendMessageType(player, Component.text("§4Vous avez refusé l'invitation"), Prefix.DUNGEON, MessageType.INFO, false);
         invitations.remove(player.getUniqueId());
     }
 
@@ -268,7 +269,7 @@ public class DungeonsCommands {
     public void onTeamLeave(Player player) {
 
         if (playerIsInDungeon(player)){
-            MessagesManager.sendMessageType(player,"§4Vous ne pouvez pas quittez une team car vous êtes en plein donjon", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§4Vous ne pouvez pas quittez une team car vous êtes en plein donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -277,7 +278,7 @@ public class DungeonsCommands {
         boolean inTeam = false;
 
         if (config.getConfigurationSection(basepath) == null){
-            MessagesManager.sendMessageType(player,"§4Tu n'as pas de team ou n'es pas déjà dans une team", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§4Tu n'as pas de team ou n'es pas déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -290,7 +291,7 @@ public class DungeonsCommands {
         }
 
         if (!config.getConfigurationSection("dungeon." + "team.").contains(playerName) && !inTeam){
-            MessagesManager.sendMessageType(player,"§4Tu n'as pas de team ", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§4Tu n'as pas de team "), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -306,15 +307,15 @@ public class DungeonsCommands {
             Set<String> spawn_point = config.getConfigurationSection("dungeon." + "mob_spawn.").getKeys(false);
 
             if (spawn_point.isEmpty()) {
-                MessagesManager.sendMessageType(player,"§cAucune spawn_point n'est enregistrée.", Prefix.DUNGEON, MessageType.ERROR, false);
+                MessagesManager.sendMessageType(player, Component.text("§cAucune spawn_point n'est enregistrée"), Prefix.DUNGEON, MessageType.ERROR, false);
             } else {
-                MessagesManager.sendMessageType(player,"§aspawn_point enregistrées :", Prefix.DUNGEON, MessageType.ERROR, false);
+                MessagesManager.sendMessageType(player, Component.text("§aspawn_point enregistrés :"), Prefix.DUNGEON, MessageType.ERROR, false);
                 for (String zone : spawn_point) {
                     player.sendMessage("§e- " + zone);
                 }
             }
         } else {
-            MessagesManager.sendMessageType(player,"§cAucune spawn_point n'est enregistrée.", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§cAucune spawn_point n'est enregistré"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
     }
 
@@ -329,7 +330,7 @@ public class DungeonsCommands {
         }
 
         if (mobList.isEmpty()) {
-            MessagesManager.sendMessageType(player,"§cAucune entité n'est enregistrée.", Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessageType(player, Component.text("§cAucune entité n'est enregistrée"), Prefix.DUNGEON, MessageType.ERROR, false);
         } else {
             player.sendMessage("§aEntités disponibles :");
             for (String mob : mobList) {
@@ -347,7 +348,7 @@ public class DungeonsCommands {
 
 
         if (player.getWorld() != dungeons){
-            player.sendMessage("vous ne pouver pas utiliser ceci dans se monde");
+            player.sendMessage("Vous ne pouver pas utiliser ceci dans ce monde");
             return;
         }
 
@@ -425,13 +426,13 @@ public class DungeonsCommands {
             for (String playerInTeam : config.getStringList(path)) {
                 Player player = Bukkit.getPlayer(playerInTeam);
                 if ( player != null && !player.getName().equals(teamName)){
-                    MessagesManager.sendMessageType(player,"§4le chef à dissous la team", Prefix.DUNGEON, MessageType.INFO, false);
+                    MessagesManager.sendMessageType(player, Component.text("§4Le chef à dissous la team"), Prefix.DUNGEON, MessageType.INFO, false);
                 }
             }
 
             config.set(basepath + teamName, null);
             Player player = Bukkit.getPlayer(teamName);
-            MessagesManager.sendMessageType(player,"§4vous avez dissous votre team", Prefix.DUNGEON, MessageType.INFO, false);
+            MessagesManager.sendMessageType(player, Component.text("§4Vous avez dissous votre team"), Prefix.DUNGEON, MessageType.INFO, false);
             DungeonManager.saveReloadConfig();
             return;
         }
@@ -446,7 +447,7 @@ public class DungeonsCommands {
                 for (String playerInTeam : config.getStringList(path)) {
                     Player player = Bukkit.getPlayer(playerInTeam);
                     if ( player != null && !player.getName().equals(teamName)){
-                        MessagesManager.sendMessageType(player,"§4" + teamName + " a quitté la team", Prefix.DUNGEON, MessageType.INFO, false);
+                        MessagesManager.sendMessageType(player, Component.text("§4" + teamName + " a quitté la team"), Prefix.DUNGEON, MessageType.INFO, false);
                     }
                 }
 
