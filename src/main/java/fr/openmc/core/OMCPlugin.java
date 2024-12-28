@@ -8,7 +8,6 @@ import fr.openmc.core.features.contest.managers.ContestPlayerManager;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
-import fr.openmc.core.features.skills.SkillsManager;
 import fr.openmc.core.features.mailboxes.MailboxManager;
 import fr.openmc.core.listeners.ListenersManager;
 import fr.openmc.core.utils.LuckPermsAPI;
@@ -61,8 +60,6 @@ public final class OMCPlugin extends JavaPlugin {
 	    new DungeonManager(this);
 		
 	    getLogger().info("Plugin activé");
-
-        getLogger().info("Plugin activé");
     }
 	
 	@Override
