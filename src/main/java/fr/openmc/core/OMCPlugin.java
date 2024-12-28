@@ -2,17 +2,22 @@ package fr.openmc.core;
 
 import dev.xernas.menulib.MenuLib;
 import fr.openmc.core.commands.CommandsManager;
+import fr.openmc.core.features.ScoreboardManager;
 import fr.openmc.core.features.city.CityManager;
+import fr.openmc.core.features.contest.managers.ContestManager;
+import fr.openmc.core.features.contest.managers.ContestPlayerManager;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
+import fr.openmc.core.features.mailboxes.MailboxManager;
 import fr.openmc.core.listeners.ListenersManager;
 import fr.openmc.core.utils.LuckPermsAPI;
+import fr.openmc.core.utils.PapiAPI;
+import fr.openmc.core.utils.customitems.CustomItemRegistry;
 import fr.openmc.core.utils.database.DatabaseManager;
 import fr.openmc.core.utils.MotdUtils;
 import lombok.Getter;
 import net.luckperms.api.LuckPerms;
-import net.raidstone.wgevents.WorldGuardEvents;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,8 +30,6 @@ public final class OMCPlugin extends JavaPlugin {
     @Getter static FileConfiguration configs;
     private DatabaseManager dbManager;
 
-    public LuckPerms lpApi;
-
     @Override
     public void onEnable() {
         instance = this;
@@ -38,15 +41,22 @@ public final class OMCPlugin extends JavaPlugin {
         /* EXTERNALS */
         MenuLib.init(this);
         new LuckPermsAPI(this);
+        new PapiAPI();
         new WorldGuardEvents().enable(this);
 
         /* MANAGERS */
         dbManager = new DatabaseManager();
         new CommandsManager();
+        CustomItemRegistry.init();
+        ContestManager contestManager = new ContestManager(this);
+        ContestPlayerManager contestPlayerManager = new ContestPlayerManager();
         new SpawnManager(this);
         new CityManager();
         new ListenersManager();
         new EconomyManager();
+        new MailboxManager();
+        contestPlayerManager.setContestManager(contestManager); // else ContestPlayerManager crash because ContestManager is null
+        contestManager.setContestPlayerManager(contestPlayerManager);
         new MotdUtils(this);
         new DungeonManager(this);
 
@@ -55,19 +65,22 @@ public final class OMCPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        try {
-            dbManager.close();
-        } catch (SQLException e) {
-            getLogger().severe("Impossible de fermer la connexion à la base de données");
+        ContestManager.getInstance().saveContestData();
+        ContestManager.getInstance().saveContestPlayerData();
+        if (dbManager != null) {
+            try {
+                dbManager.close();
+            } catch (SQLException e) {
+                getLogger().severe("Impossible de fermer la connexion à la base de données");
+            }
         }
-
-        if (config.getConfigurationSection("dungeon." + "team.") != null){ //TODO probleme ici : "path is null"
-            //config.set("dungeon." + "team.", null);
-            getLogger().info("Dungeon Team reset");
-        }
-
-        getLogger().info("Plugin désactivé");
-    }
+	    if (config.getConfigurationSection("dungeon." + "team.") != null){ //TODO probleme ici : "path is null"
+		    //config.set("dungeon." + "team.", null);
+		    getLogger().info("Dungeon Team reset");
+	    }
+	    
+	    getLogger().info("Plugin désactivé");
+	}
 
     public static void registerEvents(Listener... listeners) {
         for (Listener listener : listeners) {
