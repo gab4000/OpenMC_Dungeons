@@ -4,11 +4,16 @@ import lombok.Getter;
 
 @Getter
 public enum DungeonList {
-    dungeon_training("dungeon_training"),;
+    //TODO -1 no finish condition
 
-    private final String dungeonName;
+    dungeon_training("Training dungeon",-1),
+    dungeon_remember("remember dungeon",30),;
 
-    DungeonList (String dungeonName) {
-        this.dungeonName = dungeonName;
+    private final String DungeonName;
+    private final int KillToFinishCondition;
+
+    DungeonList(String dungeonName, int i) {
+        DungeonName = dungeonName;
+        this.KillToFinishCondition = i;
     }
 }

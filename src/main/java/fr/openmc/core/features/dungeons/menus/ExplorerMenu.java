@@ -4,8 +4,13 @@ import dev.xernas.menulib.Menu;
 import dev.xernas.menulib.utils.InventorySize;
 import dev.xernas.menulib.utils.ItemBuilder;
 import fr.openmc.core.OMCPlugin;
-import fr.openmc.core.features.dungeons.data.DungeonManager;
+import fr.openmc.core.features.dungeons.DungeonList;
+import fr.openmc.core.features.dungeons.commands.DungeonsCommands;
+import fr.openmc.core.utils.messages.MessageType;
+import fr.openmc.core.utils.messages.MessagesManager;
+import fr.openmc.core.utils.messages.Prefix;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,11 +22,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import static fr.openmc.core.features.dungeons.data.DungeonManager.config;
+import static fr.openmc.core.features.dungeons.data.DungeonManager.*;
 
 public class ExplorerMenu extends Menu {
 
-    OMCPlugin plugin;
+    static OMCPlugin plugin;
     Player player;
 
     public ExplorerMenu(Player player, OMCPlugin plugin) {
@@ -48,9 +53,9 @@ public class ExplorerMenu extends Menu {
         Map<Integer, ItemStack> map = new HashMap<>();
 
         map.put(13, new ItemBuilder(this, Material.PAPER, itemMeta -> {
-            itemMeta.setDisplayName("Training dungeon");
+            itemMeta.setDisplayName(DungeonList.dungeon_training.getDungeonName());
         }).setOnClick(inventoryClickEvent -> {
-            tpAvailableDungeon(player, "dungeon_training");
+            tpAvailableDungeon(player, DungeonList.dungeon_training + ".");
             getOwner().closeInventory();
         }));
 
@@ -61,10 +66,66 @@ public class ExplorerMenu extends Menu {
         return map;
     }
 
-    public void tpAvailableDungeon(Player player, String dungeons) {
+    public static void tpAvailableDungeon(Player player, String dungeons) {
 
-        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + "dungeon_training").getKeys(false)){
-            String path = "dungeon." + "dungeon_places." + "dungeon_training." + dungeon;
+        if (config.getConfigurationSection("dungeon." + "dungeon_places.")==null){
+            MessagesManager.sendMessageType(player, Component.text("§4Erreur lors de la téléportation vers le donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
+
+        if (config.getConfigurationSection("dungeon." + "team.")!=null && !dungeons.equals(DungeonList.dungeon_training + ".")){
+            for (String team : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
+                String basePath = "dungeon." + "team." + team;
+                if (config.getStringList(basePath + ".player_in_team").contains(player.getName())){
+                    if (team.equals(player.getName())) {
+                        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + dungeons).getKeys(false)){
+                            String path = "dungeon." + "dungeon_places." + dungeons + dungeon;
+
+                            boolean available = config.getBoolean(path + ".available");
+                            String location = config.getString(path + ".spawn_co");
+
+                            if (location != null && available) {
+
+                                String[] parts = location.split(",");
+
+                                if (parts.length >= 3) {
+                                    double x = Double.parseDouble(parts[0]);
+                                    double y = Double.parseDouble(parts[1]);
+                                    double z = Double.parseDouble(parts[2]);
+
+                                    if (Bukkit.getWorld("Dungeons") != null) {
+                                        config.set(path + ".available", false);
+                                        for (String playerInTeam : config.getStringList(basePath + ".player_in_team")){
+                                            Player target = Bukkit.getPlayer(playerInTeam);
+                                            Location tp = new Location(Bukkit.getWorld("Dungeons"), x, y, z);
+                                            String dungeonPath = "dungeon." + "players_in_dungeon." + target.getName();
+                                            target.teleport(tp);
+                                            config.set(dungeonPath + ".dungeon", dungeons);
+                                            config.set(dungeonPath + ".places", dungeon);
+                                            config.set(dungeonPath + ".states", "alive");
+                                        }
+                                        saveReloadConfig();
+                                    } else {
+                                        MessagesManager.sendMessageType(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);
+                                    }
+                                    break;
+                                }
+                            }
+
+                            if (location == null) {
+                                plugin.getLogger().info("§4ERROR : a location in the dungeon.yml incorrectly initialized or right");
+                            }
+                        }
+                    } else {
+                        MessagesManager.sendMessageType(player, Component.text("§4Vous n'êtes pas le chef de votre team"), Prefix.DUNGEON, MessageType.ERROR, false);
+                    }
+                    return;
+                }
+            }
+        }
+
+        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + dungeons).getKeys(false)){
+            String path = "dungeon." + "dungeon_places." + dungeons + dungeon;
 
             boolean available = config.getBoolean(path + ".available");
             String location = config.getString(path + ".spawn_co");
@@ -85,9 +146,12 @@ public class ExplorerMenu extends Menu {
                         config.set(path + ".available", false);
                         config.set(dungeonPath + ".dungeon", dungeons);
                         config.set(dungeonPath + ".places", dungeon);
-                        DungeonManager.saveReloadConfig();
-                        break;
+                        config.set(dungeonPath + ".states", "alive");
+                        saveReloadConfig();
+                    } else {
+                        MessagesManager.sendMessageType(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);
                     }
+                    break;
                 }
             }
 

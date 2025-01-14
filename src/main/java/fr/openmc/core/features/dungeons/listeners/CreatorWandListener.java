@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 
 public class CreatorWandListener implements Listener {
 
@@ -26,11 +27,12 @@ public class CreatorWandListener implements Listener {
 
         Player player = event.getPlayer();
         World world = player.getWorld();
-        CustomStack customStack = CustomStack.byItemStack(player.getInventory().getItemInMainHand());
+        CustomStack item = CustomStack.getInstance("dungeon:mob_wand");
+        ItemStack wand = item.getItemStack();
 
-        if (world.getName().equals(dimensionName)){
+        if (world.getName().equals(dimensionName) && player.isOp()){
             if (!click && event.getAction() == org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) {
-                if (customStack != null && customStack.getId().equals("mob_wand")) {
+                if (wand != null && player.getInventory().getItemInMainHand().equals(wand)) {
                     Location mobPos = event.getClickedBlock().getLocation();
                     MobPos = mobPos;
                     player.sendMessage("point d'apparition du mob définit a : x," + mobPos.getBlockX() + " y," + mobPos.getBlockY() + " z," + mobPos.getBlockZ() );

@@ -3,23 +3,23 @@ package fr.openmc.core.features.dungeons.data;
 import fr.openmc.core.OMCPlugin;
 import fr.openmc.core.commands.CommandsManager;
 import fr.openmc.core.features.dungeons.commands.DungeonsCommands;
+import fr.openmc.core.features.dungeons.levels.DungeonLevelsListener;
 import fr.openmc.core.features.dungeons.listeners.CreatorWandListener;
 import fr.openmc.core.features.dungeons.listeners.NaturalMobSpawnListener;
 import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
 import fr.openmc.core.features.dungeons.listeners.PlayerActionListener;
-import fr.openmc.core.features.dungeons.listeners.items.ItemsBreakListener;
-import fr.openmc.core.features.dungeons.listeners.items.PlayerDeathListener;
+import fr.openmc.core.features.dungeons.items.ItemsBreakListener;
 import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
 
-public class DungeonManager implements Listener {
+import static fr.openmc.core.OMCPlugin.registerEvents;
+
+public class DungeonManager {
 
     OMCPlugin plugin;
     Server server;
@@ -29,21 +29,37 @@ public class DungeonManager implements Listener {
     @Getter
     public static FileConfiguration config;
     public static File file;
+    public static FileConfiguration dl_config;
+    public static File dl_file;
+    public static Location DungeonSpawn;
 
     public DungeonManager(OMCPlugin plugin) {
         this.plugin = plugin;
         this.server = plugin.getServer();
+        DungeonSpawn = new Location(Bukkit.getWorld("Dungeons"), 0, 100, 0);
 
         file = new File(plugin.getDataFolder(), "dungeon.yml");
         if (!file.exists()) {
             try {
                 file.createNewFile();
-               dungeonsCommands.updateDungeonYML();
+               dungeonsCommands.updateDungeonYML(plugin);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         config = YamlConfiguration.loadConfiguration(file);
+
+        dl_file = new File(plugin.getDataFolder(), "dungeon_levels.yml");
+        if (!dl_file.exists()) {
+            try {
+                dl_file.createNewFile();
+                dl_config = YamlConfiguration.loadConfiguration(dl_file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        dl_config = YamlConfiguration.loadConfiguration(dl_file);
 
         init();
 
@@ -54,15 +70,20 @@ public class DungeonManager implements Listener {
 
     public void init() {
 
+        if (config.getBoolean("dungeon." + "yml_auto_update.")){
+            dungeonsCommands.updateDungeonYML(plugin);
+            config.set("dungeon." + "yml_auto_update.", false);
+        }
+
         createDungeonDim();
 
         registerEvents(
                 new NaturalMobSpawnListener("Dungeons"),
                 new CreatorWandListener("Dungeons"),
                 new MobSpawnZoneListener(plugin),
-                new PlayerDeathListener(),
                 new PlayerActionListener(plugin),
-                new ItemsBreakListener()
+                new ItemsBreakListener(),
+                new DungeonLevelsListener()
         );
     }
 
@@ -86,18 +107,19 @@ public class DungeonManager implements Listener {
         plugin.getLogger().info("Dungeon dimension created successfully!");
     }
 
-    private void registerEvents(Listener... args) {
-        Server server = Bukkit.getServer();
-        JavaPlugin plugin = OMCPlugin.getInstance();
-        for (Listener listener : args) {
-            server.getPluginManager().registerEvents(listener, plugin);
-        }
-    }
-
     public static void saveReloadConfig() {
         try {
             config.save(file);
             config = YamlConfiguration.loadConfiguration(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveReloadDLConfig() {
+        try {
+            dl_config.save(dl_file);
+            dl_config = YamlConfiguration.loadConfiguration(dl_file);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,7 +10,7 @@
 # /!\
 
 # dungeon:
- # mob_spawn: # Ici les spawn_point des mobs des donjons
+ # mob_spawn: Ici les spawn_point des mobs des donjons
  #   spawn_point1:
  #     activated: true # Savoir si la zone a déjà été activée ou non
  #     mob: zombie
@@ -18,24 +18,27 @@
  #     y: 64.0 # Coordonée Y du point de spawn et de l'origine du mob
  #     z: 0.0 # Coordonée Z du point de spawn et de l'origine du mob
 
- # dungeon_spawn:
- #   dungeon_1_places: # Représente les places dans un donjon, ici il y a les place pour le donjon 1 [ à mettre manuellement et 1 a remplacer par le nom du donjon ]
- #     '1': # Repésente une place/une copie du donjon (ici c'est la place 1/la copie 1 du donjon 1) [ à mettre manuellement ]
+ # dungeon_places:
+ #   dungeon_training: Représente les places dans un donjon, ici il y a les place pour le donjon 1 [ à mettre manuellement et 1 a remplacer par le nom du donjon ]
+ #     '0': Repésente une place/une copie du donjon (ici c'est la place 1/la copie 1 du donjon 1) [ à mettre manuellement ]
  #       available: true # Savoir si il est utilisable ou non [ à mettre manuellement en "true" quand une place/copie est créée ]
- #       spawn_co: 10, 10, 10 # Cordonnées du point de téléporation à celui-ci [ à mettre manuellement et laisser Dungeon pour le monde]
+ #       spawn_co: 10, 10, 10 # Cordonnées du point de téléporation à celui-ci [ à mettre manuellement ]
 
- # team: # Stockage des teams
- #   Nocolm: # Créateur de la team
- #     player_in_team: # Joueurs dans la team (le créateur est aussi dedans), limité a 4 joueurs
+ # team: Stockage des teams
+ #   Nocolm: Créateur de la team/ identifiant d'un team
+ #     player_in_team: Joueurs dans la team (le créateur est aussi dedans), limité a 4 joueurs
  #       - Nocolm
  #       - Nocolm
  #       - Nocolm
  #       - Nocolm
+ #     remain : nombre d'entité restant à tuer [ -1 position null ]
+ #     level : niveau d'une équipe [ celle-ci est définit par le joueur ayant plus bas niveau de la team ]
  #
  # players_in_dungeon :
  #   Nocolm :
  #     dungeon : nom du donjon
  #     places : la place [ ex : '1' ]
+ #     states : savoir si le joueur est en vie ou non [ alive / spec ]
 
 dungeon:
   mob_spawn:
@@ -56,8 +59,17 @@ dungeon:
     dungeon_training:
       '0':
         available: true
-        spawn_co: Dungeon, 10, 10, 10
+        spawn_co: 10, 10, 10
+
+    dungeon_remember:
+      '0':
+        available: true
+        spawn_co: 20, 20, 20
 
   team: {}
 
-  players_in_dungeon : {}
+  players_in_dungeon: {}
+
+  yml_auto_update: false
+
+  player_spawn_point: {}

@@ -58,10 +58,10 @@ public final class OMCPlugin extends JavaPlugin {
 	    contestManager.setContestPlayerManager(contestPlayerManager);
 	    new MotdUtils(this);
 	    new DungeonManager(this);
-		
+
 	    getLogger().info("Plugin activé");
     }
-	
+
 	@Override
 	public void onDisable() {
 		ContestManager.getInstance().saveContestData();
@@ -73,13 +73,20 @@ public final class OMCPlugin extends JavaPlugin {
                 getLogger().severe("Impossible de fermer la connexion à la base de données");
             }
         }
-	    if (config.getConfigurationSection("dungeon." + "team.") != null){ //TODO probleme ici : "path is null"
-		    //config.set("dungeon." + "team.", null);
-		    getLogger().info("Dungeon Team reset");
-	    }
-	    
-	    getLogger().info("Plugin désactivé");
-	}
+
+        if (config.getConfigurationSection("dungeon." + "team") != null){ //TODO probleme ici : "path is null"
+            try {
+                config.set("dungeon." + "team", null);
+                getLogger().info("Dungeon Team reset");
+            } catch (Exception exception){
+                getLogger().info("Error during the reset of the team");
+            }
+        }
+
+        //TODO remettre tous les donjons a 0
+
+        getLogger().info("Plugin désactivé");
+    }
 
     public static void registerEvents(Listener... listeners) {
         for (Listener listener : listeners) {
