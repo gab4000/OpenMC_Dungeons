@@ -30,6 +30,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Objects;
 
+import static fr.openmc.core.features.dungeons.commands.DungeonsCommands.dungeons;
 import static fr.openmc.core.features.dungeons.data.DungeonManager.*;
 import static fr.openmc.core.features.dungeons.menus.ExplorerMenu.dungeonSoloCondition;
 
@@ -90,7 +91,7 @@ public class PlayerActionListener implements Listener {
     public void onDamageTaken(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player){
             Player player = Bukkit.getPlayer(event.getEntity().getUniqueId());
-            if (!DungeonsCommands.playerIsInDungeon(player)){
+            if (!DungeonsCommands.playerIsInDungeon(player) || player.getWorld().equals(dungeons)){
                 if (event.getDamage() >0.1){
                     event.setCancelled(true);
                 }
@@ -101,7 +102,7 @@ public class PlayerActionListener implements Listener {
     @EventHandler
     public void onPlayerBreakBlock (BlockBreakEvent event){
         Player trigger = event.getPlayer();
-        if (!trigger.isOp() && trigger.getWorld()== Bukkit.getWorld("dungeons")){
+        if (!trigger.isOp() && trigger.getWorld().equals(dungeons)){
             event.setCancelled(true);
             MessagesManager.sendMessageType(trigger, Component.text("§4vous ne pouvez pas détruire de block"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
@@ -110,7 +111,7 @@ public class PlayerActionListener implements Listener {
     @EventHandler
     private void onPlayerPlaceBlock (BlockPlaceEvent event){
         Player trigger = event.getPlayer();
-        if (!trigger.isOp() && trigger.getWorld()== Bukkit.getWorld("dungeons")){
+        if (!trigger.isOp() && trigger.getWorld().equals(dungeons)){
             event.setCancelled(true);
             MessagesManager.sendMessageType(trigger, Component.text("§4vous ne pouvez pas posez de block"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
@@ -119,7 +120,7 @@ public class PlayerActionListener implements Listener {
     @EventHandler
     public void onPlayerDie (PlayerDeathEvent event){
         Player player = event.getPlayer();
-        if (player.getWorld()!=Bukkit.getWorld("dungeons")){return;}
+        if (!player.getWorld().equals(dungeons)){return;}
         CustomStack item = CustomStack.getInstance("dungeon:corrupted_resurrection_stone");
         ItemStack stone = item.getItemStack();
         if (stone == null ) {
@@ -141,7 +142,7 @@ public class PlayerActionListener implements Listener {
 
     @EventHandler
     public void PlayerKillMob (EntityDeathEvent event) {
-        if (event.getEntity().getWorld() == Bukkit.getWorld("Dungeons")){
+        if (event.getEntity().getWorld().equals(dungeons)){
             Player player = event.getEntity().getKiller();
             if (event.getEntity()==player || player==null){return;}
             if (IsInTeam(player)){
@@ -247,7 +248,7 @@ public class PlayerActionListener implements Listener {
             return;
         }
         Player player = event.getPlayer();
-        if (!IsAlive(player.getName()) && player.getWorld() == Bukkit.getWorld("Dungeons")){
+        if (!IsAlive(player.getName()) && player.getWorld().equals(dungeons)){
             String dungeon = config.getString("dungeon." + "players_in_dungeon." + player.getName() + ".dungeon");
             String place = "." + config.getString("dungeon." + "players_in_dungeon." + player.getName() + ".places");
             String path = "dungeon." + "dungeon_places." + dungeon + place ;
