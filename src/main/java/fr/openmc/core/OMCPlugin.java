@@ -9,6 +9,7 @@ import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
 import fr.openmc.core.features.mailboxes.MailboxManager;
+import fr.openmc.core.features.skills.skill.passive.PassiveSkillsManager;
 import fr.openmc.core.listeners.ListenersManager;
 import fr.openmc.core.utils.LuckPermsAPI;
 import fr.openmc.core.utils.PapiAPI;
@@ -31,6 +32,7 @@ public final class OMCPlugin extends JavaPlugin {
     @Getter static FileConfiguration configs;
     @Getter static TranslationManager translationManager;
     private DatabaseManager dbManager;
+	@Getter private PassiveSkillsManager passiveSkillsManager;
 
     @Override
     public void onEnable() {
@@ -61,6 +63,7 @@ public final class OMCPlugin extends JavaPlugin {
 	    contestManager.setContestPlayerManager(contestPlayerManager);
 	    new MotdUtils(this);
 	    new DungeonManager(this);
+		this.passiveSkillsManager = new PassiveSkillsManager();
         translationManager = new TranslationManager(this, new File(this.getDataFolder(), "translations"), "fr");
         translationManager.loadAllLanguages();
 
