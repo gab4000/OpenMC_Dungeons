@@ -7,12 +7,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ListenersManager {
-    public ListenersManager() {
+    public ListenersManager(OMCPlugin plugin) {
         registerEvents(
                 new SessionsListener(),
                 new JoinMessageListener(),
-                new ClockInfos()//,
-                //new DisableCreakings()
+                new ClockInfos()
+                //new DisableCreakings(),
         );
     }
 
