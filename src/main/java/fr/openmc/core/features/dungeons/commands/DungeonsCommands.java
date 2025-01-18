@@ -715,7 +715,7 @@ public class DungeonsCommands {
         listener.reload();
     }
 
-    public void updateDungeonYML(OMCPlugin plugin) {
+    public static void updateDungeonYML(OMCPlugin plugin) {
         try {
             //TODO stocker puis enregistrer les co des joueurs dans le yml
             Reader resourceReader = new InputStreamReader(Objects.requireNonNull(plugin.getResource("dungeon.yml")));
@@ -737,8 +737,9 @@ public class DungeonsCommands {
             plugin.getLogger().info("Dungeon configuration updated starting");
 
             resourceReader.close();
-            if (config != null && config.getConfigurationSection("dungeon." + "players_in_dungeon.") != null){
-                for (String players : config.getConfigurationSection("dunegon." + "players_in_dungeon.").getKeys(false)){
+
+            if (config != null && config.contains("dungeon." + "players_in_dungeon.")){
+                for (String players : config.getConfigurationSection("dungeon." + "players_in_dungeon.").getKeys(false)){
                     Player player = Bukkit.getPlayer(players);
                     MessagesManager.sendMessageType(player, Component.text("§4Une mise a jour des donjons a eu lieu vous avez donc été renvoyer au spawn. Pour nous faire pardonner nous vous avons fait gagner le donjons dans lequel vous étiez"), Prefix.DUNGEON, MessageType.INFO, false);
                     //TODO faire PlayerWinDungeon ou TeamWinDungeon

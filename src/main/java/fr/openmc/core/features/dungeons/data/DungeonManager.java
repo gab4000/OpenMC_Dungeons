@@ -24,8 +24,6 @@ public class DungeonManager {
     OMCPlugin plugin;
     Server server;
 
-    DungeonsCommands dungeonsCommands;
-
     @Getter
     public static FileConfiguration config;
     public static File file;
@@ -38,11 +36,16 @@ public class DungeonManager {
         this.server = plugin.getServer();
         DungeonSpawn = new Location(Bukkit.getWorld("Dungeons"), 0, 100, 0);
 
+        CommandsManager.getHandler().register(
+                new DungeonsCommands(plugin)
+        );
+
         file = new File(plugin.getDataFolder(), "dungeon.yml");
         if (!file.exists()) {
             try {
                 file.createNewFile();
-               dungeonsCommands.updateDungeonYML(plugin);
+                config = YamlConfiguration.loadConfiguration(file);
+                DungeonsCommands.updateDungeonYML(plugin);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -63,15 +66,12 @@ public class DungeonManager {
 
         init();
 
-        CommandsManager.getHandler().register(
-                new DungeonsCommands(plugin)
-        );
     }
 
     public void init() {
 
         if (config.getBoolean("dungeon." + "yml_auto_update.")){
-            dungeonsCommands.updateDungeonYML(plugin);
+            DungeonsCommands.updateDungeonYML(plugin);
             config.set("dungeon." + "yml_auto_update.", false);
         }
 
