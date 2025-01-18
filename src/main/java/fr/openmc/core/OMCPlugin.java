@@ -9,25 +9,30 @@ import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
 import fr.openmc.core.features.mailboxes.MailboxManager;
+import fr.openmc.core.features.skills.skill.passive.PassiveSkillsManager;
 import fr.openmc.core.listeners.ListenersManager;
 import fr.openmc.core.utils.LuckPermsAPI;
 import fr.openmc.core.utils.PapiAPI;
 import fr.openmc.core.utils.customitems.CustomItemRegistry;
 import fr.openmc.core.utils.database.DatabaseManager;
 import fr.openmc.core.utils.MotdUtils;
+import fr.openmc.core.utils.translation.TranslationManager;
 import lombok.Getter;
 import net.raidstone.wgevents.WorldGuardEvents;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.sql.SQLException;
 import static fr.openmc.core.features.dungeons.data.DungeonManager.config;
 
 public final class OMCPlugin extends JavaPlugin {
     @Getter static OMCPlugin instance;
     @Getter static FileConfiguration configs;
+    @Getter static TranslationManager translationManager;
     private DatabaseManager dbManager;
+	@Getter private PassiveSkillsManager passiveSkillsManager;
 
     @Override
     public void onEnable() {
@@ -51,13 +56,16 @@ public final class OMCPlugin extends JavaPlugin {
         ContestPlayerManager contestPlayerManager = new ContestPlayerManager();
         new SpawnManager(this);
         new CityManager();
-        new ListenersManager();
+        new ListenersManager(this);
         new EconomyManager();
 	    new MailboxManager();
 	    contestPlayerManager.setContestManager(contestManager); // else ContestPlayerManager crash because ContestManager is null
 	    contestManager.setContestPlayerManager(contestPlayerManager);
 	    new MotdUtils(this);
 	    new DungeonManager(this);
+		this.passiveSkillsManager = new PassiveSkillsManager();
+        translationManager = new TranslationManager(this, new File(this.getDataFolder(), "translations"), "fr");
+        translationManager.loadAllLanguages();
 
 	    getLogger().info("Plugin activé");
     }
