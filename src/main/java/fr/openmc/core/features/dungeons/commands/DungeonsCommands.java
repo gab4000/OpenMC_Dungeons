@@ -8,6 +8,7 @@ import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -39,8 +40,8 @@ public class DungeonsCommands {
     private final OMCPlugin plugin;
     MobSpawnZoneListener listener;
     Location spawnLocation = SpawnManager.getInstance().getSpawnLocation();
-    World dungeons = Bukkit.getWorld("Dungeons");
-    World world = Bukkit.getWorld("world");// overworld
+    public static World dungeons = Bukkit.getWorld("Dungeons");
+    public static World world = Bukkit.getWorld("world");// overworld
 
     FileConfiguration backupConfig;
     File backupFile;

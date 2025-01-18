@@ -5,10 +5,12 @@ import dev.xernas.menulib.utils.InventorySize;
 import dev.xernas.menulib.utils.ItemBuilder;
 import fr.openmc.core.OMCPlugin;
 import fr.openmc.core.features.dungeons.DungeonList;
-import fr.openmc.core.features.dungeons.commands.DungeonsCommands;
+import fr.openmc.core.utils.cooldown.DynamicCooldown;
+import fr.openmc.core.utils.cooldown.DynamicCooldownManager;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
+import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -21,18 +23,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static fr.openmc.core.features.dungeons.data.DungeonManager.*;
 
 public class ExplorerMenu extends Menu {
 
-    static OMCPlugin plugin;
+    @Getter
+    public static Map<UUID, Integer> dungeonSoloCondition = new HashMap<>();
+
+    public static OMCPlugin plugin;
     Player player;
 
-    public ExplorerMenu(Player player, OMCPlugin plugin) {
+
+    public ExplorerMenu(Player player) {
         super(player);
         this.player = player;
-        this.plugin = plugin;
     }
 
     @Override
@@ -55,7 +61,7 @@ public class ExplorerMenu extends Menu {
         map.put(13, new ItemBuilder(this, Material.PAPER, itemMeta -> {
             itemMeta.setDisplayName(DungeonList.dungeon_training.getDungeonName());
         }).setOnClick(inventoryClickEvent -> {
-            tpAvailableDungeon(player, DungeonList.dungeon_training + ".");
+            tpAvailableDungeon(player, DungeonList.dungeon_training);
             getOwner().closeInventory();
         }));
 
@@ -66,20 +72,20 @@ public class ExplorerMenu extends Menu {
         return map;
     }
 
-    public static void tpAvailableDungeon(Player player, String dungeons) {
+    public static void tpAvailableDungeon(Player player, DungeonList dungeons) {
 
         if (config.getConfigurationSection("dungeon." + "dungeon_places.")==null){
             MessagesManager.sendMessageType(player, Component.text("§4Erreur lors de la téléportation vers le donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
-        if (config.getConfigurationSection("dungeon." + "team.")!=null && !dungeons.equals(DungeonList.dungeon_training + ".")){
+        if (config.getConfigurationSection("dungeon." + "team.")!=null && !dungeons.equals(DungeonList.dungeon_training)){
             for (String team : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
                 String basePath = "dungeon." + "team." + team;
                 if (config.getStringList(basePath + ".player_in_team").contains(player.getName())){
                     if (team.equals(player.getName())) {
-                        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + dungeons).getKeys(false)){
-                            String path = "dungeon." + "dungeon_places." + dungeons + dungeon;
+                        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + dungeons + ".").getKeys(false)){
+                            String path = "dungeon." + "dungeon_places." + dungeons + "." + dungeon;
 
                             boolean available = config.getBoolean(path + ".available");
                             String location = config.getString(path + ".spawn_co");
@@ -103,6 +109,7 @@ public class ExplorerMenu extends Menu {
                                             config.set(dungeonPath + ".dungeon", dungeons);
                                             config.set(dungeonPath + ".places", dungeon);
                                             config.set(dungeonPath + ".states", "alive");
+                                            config.set(basePath + ".remain", dungeons.getKillToFinishCondition());
                                         }
                                         saveReloadConfig();
                                     } else {
@@ -124,8 +131,8 @@ public class ExplorerMenu extends Menu {
             }
         }
 
-        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + dungeons).getKeys(false)){
-            String path = "dungeon." + "dungeon_places." + dungeons + dungeon;
+        for (String dungeon : config.getConfigurationSection("dungeon." + "dungeon_places." + dungeons + ".").getKeys(false)){
+            String path = "dungeon." + "dungeon_places." + dungeons + "." + dungeon;
 
             boolean available = config.getBoolean(path + ".available");
             String location = config.getString(path + ".spawn_co");
@@ -147,6 +154,7 @@ public class ExplorerMenu extends Menu {
                         config.set(dungeonPath + ".dungeon", dungeons);
                         config.set(dungeonPath + ".places", dungeon);
                         config.set(dungeonPath + ".states", "alive");
+                        dungeonSoloCondition.put(player.getUniqueId(), dungeons.getKillToFinishCondition());
                         saveReloadConfig();
                     } else {
                         MessagesManager.sendMessageType(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);

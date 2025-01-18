@@ -24,9 +24,6 @@ public class DungeonsChoiceMenu extends Menu {
     // - faire apparaitre le nombre de mob a tuer pour finir le donjons
     Player player;
 
-    @Getter
-    public static Map<UUID, Integer> dungeonCondition = new HashMap<>();
-
     public DungeonsChoiceMenu(Player player) {
         super(player);
         this.player = player;
@@ -56,7 +53,7 @@ public class DungeonsChoiceMenu extends Menu {
             map.put(index, new ItemBuilder(this, Material.PAPER, itemMeta -> {
                 itemMeta.setDisplayName("donjon " + index);
             }).setOnClick(inventoryClickEvent -> {
-                tpAvailableDungeon(player, dungeon + ".");
+                tpAvailableDungeon(player, dungeon);
                 getOwner().closeInventory();
             }));
             i++;

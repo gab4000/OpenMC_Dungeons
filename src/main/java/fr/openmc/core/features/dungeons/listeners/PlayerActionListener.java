@@ -31,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Objects;
 
 import static fr.openmc.core.features.dungeons.data.DungeonManager.*;
-import static fr.openmc.core.features.dungeons.menus.DungeonsChoiceMenu.dungeonCondition;
+import static fr.openmc.core.features.dungeons.menus.ExplorerMenu.dungeonSoloCondition;
 
 public class PlayerActionListener implements Listener {
 
@@ -53,7 +53,7 @@ public class PlayerActionListener implements Listener {
         if (entity != null){
             if (entity.getCustomName()==null){return;}
             if (entity.getCustomName().equals("test")){ //TODO a changer plus tard
-                ExplorerMenu menu = new ExplorerMenu(player, plugin);
+                ExplorerMenu menu = new ExplorerMenu(player);
                 menu.open();
             }
         }
@@ -67,18 +67,19 @@ public class PlayerActionListener implements Listener {
             return;
         }
 
-        if (IsInTeam(player)){
-            DungeonsCommands.leaveTeam(player.getName());
-        }
-
         player.teleport(DungeonSpawn);
         String path = "dungeon." + "players_in_dungeon." + player.getName();
         if (config.get(path)==null){return;}
         String dungeonName = config.getString(path + ".dungeon");
         String dungeonPlace = config.getString(path + ".places");
 
-        String dungeonPath = "dungeon." + "dungeon_places." + dungeonName + "." + dungeonPlace;
-        config.set(dungeonPath + ".available", true);
+        if (!IsInTeam(player)){
+            String dungeonPath = "dungeon." + "dungeon_places." + dungeonName + "." + dungeonPlace;
+            config.set(dungeonPath + ".available", true);
+            dungeonSoloCondition.remove(player.getUniqueId());
+        } else {
+            DungeonsCommands.leaveTeam(player.getName());
+        }
 
         config.set(path, null);
         saveReloadConfig();
@@ -152,21 +153,21 @@ public class PlayerActionListener implements Listener {
                             TeamWinDungeon(team);
                             return;
                         }
-                        if (remain < 0){
+                        if (remain > 0){
                             config.set(path + ".remain", remain);
                             return;
                         }
                     }
                 }
             } else {
-                if (dungeonCondition.containsKey(player.getUniqueId())){
-                    int remain = dungeonCondition.get(player.getUniqueId()) - 1;
+                if (dungeonSoloCondition.containsKey(player.getUniqueId())){
+                    int remain = dungeonSoloCondition.get(player.getUniqueId()) - 1;
                     if (remain == 0){
                         PlayerWinDungeon(player);
                         return;
                     }
-                    if (remain < 0){
-                        dungeonCondition.replace(player.getUniqueId(), remain);
+                    if (remain > 0){
+                        dungeonSoloCondition.replace(player.getUniqueId(), remain);
                     }
                 }
             }
