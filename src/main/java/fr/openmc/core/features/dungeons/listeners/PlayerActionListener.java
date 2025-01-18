@@ -91,7 +91,7 @@ public class PlayerActionListener implements Listener {
     public void onDamageTaken(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player){
             Player player = Bukkit.getPlayer(event.getEntity().getUniqueId());
-            if (!DungeonsCommands.playerIsInDungeon(player) || player.getWorld().equals(dungeons)){
+            if (!DungeonsCommands.playerIsInDungeon(player) && player.getWorld().equals(dungeons)){
                 if (event.getDamage() >0.1){
                     event.setCancelled(true);
                 }
