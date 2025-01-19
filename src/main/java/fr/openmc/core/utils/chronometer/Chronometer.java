@@ -1,7 +1,6 @@
 package fr.openmc.core.utils.chronometer;
 
 import fr.openmc.core.OMCPlugin;
-import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
