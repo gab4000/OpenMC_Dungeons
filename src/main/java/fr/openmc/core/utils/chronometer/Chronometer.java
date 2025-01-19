@@ -1,6 +1,7 @@
 package fr.openmc.core.utils.chronometer;
 
 import fr.openmc.core.OMCPlugin;
+import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 public class Chronometer {
 
-    private final HashMap<UUID, Integer> chronometer = new HashMap<>();
+    private static final HashMap<UUID, Integer> chronometer = new HashMap<>();
 
     /**
      * FOR "start" :
@@ -21,7 +22,7 @@ public class Chronometer {
      * if you don't want to display a message just put %null%
      */
 
-    public void start(Player player, int time, String message, String finishMessage) {
+    public static void start(Player player, int time,ChronometerType messageType, String message,ChronometerType finishMessageType, String finishMessage) {
         UUID playerID = player.getUniqueId();
         chronometer.put(playerID, time);
 
@@ -39,11 +40,11 @@ public class Chronometer {
                     if (message.contains("%sec%")) {
                         timerMessage = message.replace("%sec%", String.valueOf(remainingTime));
                     }
-                    player.sendMessage(timerMessage);
+                    player.spigot().sendMessage(messageType.getChatMessageType(), UUID.fromString(timerMessage));
                 }
 
                 if (timerEnd(playerID)) {
-                    player.sendMessage(finishMessage != null ? finishMessage : "Le chronomètre est terminé !");
+                    player.spigot().sendMessage(finishMessageType.getChatMessageType(), UUID.fromString(finishMessage != null ? finishMessage : "Le chronomètre est terminé !"));
                     chronometer.remove(playerID);
                     cancel();
                     return;
@@ -54,21 +55,21 @@ public class Chronometer {
         }.runTaskTimer(OMCPlugin.getInstance(), 0, 20);
     }
 
-    public void stop(Player player, String message) {
+    public static void stop(Player player,ChronometerType messageType, String message) {
         UUID playerID = player.getUniqueId();
         if (chronometer.containsKey(playerID)) {
             chronometer.remove(playerID);
             if (!message.contains("%null%")){
-                player.sendMessage(message);
+                player.spigot().sendMessage(messageType.getChatMessageType(), UUID.fromString(message));
             }
         }
     }
 
-    public int getRemainingTime (UUID playerID){
+    public static int getRemainingTime (UUID playerID){
         return chronometer.get(playerID);
     }
 
-    public boolean timerEnd (UUID playerID){
+    public static boolean timerEnd (UUID playerID){
         return chronometer.get(playerID) <= 0;
     }
 }
