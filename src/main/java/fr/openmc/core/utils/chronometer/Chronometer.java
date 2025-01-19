@@ -64,7 +64,11 @@ public class Chronometer {
         }
     }
 
-    public boolean timerEnd (UUID player){
-        return chronometer.get(player) <= 0;
+    public int getRemainingTime (UUID playerID){
+        return chronometer.get(playerID);
+    }
+
+    public boolean timerEnd (UUID playerID){
+        return chronometer.get(playerID) <= 0;
     }
 }
