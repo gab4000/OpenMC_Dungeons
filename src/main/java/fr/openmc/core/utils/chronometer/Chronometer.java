@@ -64,7 +64,7 @@ public class Chronometer {
 
                 if (timerEnd(playerID, group)) {
                     player.spigot().sendMessage(finishMessageType.getChatMessageType(), new TextComponent(finishMessage != null ? finishMessage : "Le chronomètre est terminé !"));
-                    chronometer.remove(playerID);
+                    chronometer.get(playerID).remove(group);
                     cancel();
                     return;
                 }
