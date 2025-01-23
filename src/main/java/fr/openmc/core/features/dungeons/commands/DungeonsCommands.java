@@ -8,7 +8,6 @@ import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
-import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -40,8 +39,8 @@ public class DungeonsCommands {
     private final OMCPlugin plugin;
     MobSpawnZoneListener listener;
     Location spawnLocation = SpawnManager.getInstance().getSpawnLocation();
-    public static World dungeons = Bukkit.getWorld("Dungeons");
-    public static World world = Bukkit.getWorld("world");// overworld
+    public static final World dungeons = Bukkit.getWorld("Dungeons");
+    public static final World world = Bukkit.getWorld("world");// overworld
 
     FileConfiguration backupConfig;
     File backupFile;
@@ -106,11 +105,13 @@ public class DungeonsCommands {
                         player.teleport(new Location(world, x, y, z));
                         config.set("dungeon." + "player_spawn_point." + player.getUniqueId(), null);
                         playerDataSaver.loadPlayerData(player, world.getName());
-                        for (String teamName : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
-                            String path = "dungeon." + "team." + teamName;
-                            if (config.contains(path + player.getName())){
-                                leaveTeam(teamName);
-                                break;
+                        if (config.getConfigurationSection("dungeon." + "team.")!=null){
+                            for (String teamName : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
+                                String path = "dungeon." + "team." + teamName;
+                                if (config.contains(path + player.getName())){
+                                    leaveTeam(teamName);
+                                    break;
+                                }
                             }
                         }
 
@@ -189,7 +190,7 @@ public class DungeonsCommands {
             return;
         }
 
-        MessagesManager.sendMessageType(player,Component.text("Team créée ! Utilisez team invite pour inviter des joueurs dans votre team"), Prefix.DUNGEON, MessageType.SUCCESS, false);
+        MessagesManager.sendMessageType(player,Component.text("Team créée ! Utilisez /dungeon team invite pour inviter des joueurs dans votre team"), Prefix.DUNGEON, MessageType.SUCCESS, false);
         createTeam(playerName);
     }
 
@@ -285,6 +286,7 @@ public class DungeonsCommands {
         UUID inviterUUID = invitations.get(player.getUniqueId());
         if (inviterUUID == null) {
             MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas reçu d'invitation"), Prefix.DUNGEON, MessageType.ERROR, false);
+            player.sendMessage(inviterUUID);
             return;
         }
 
@@ -385,7 +387,7 @@ public class DungeonsCommands {
         }
         for (String team : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
             String path = "dungeon." + "team." + team;
-            if (config.contains(path + player.getName())){
+            if (config.contains(path + ".player_in_team." + player.getName())){
                 List<String> info = config.getStringList(path + ".player_in_team");
                 String teamLevel = config.getString(path + ".level");
                 MessagesManager.sendMessageType(player,Component.text("Voici les info de votre Team :"), Prefix.DUNGEON, MessageType.INFO, false);
@@ -575,6 +577,9 @@ public class DungeonsCommands {
     private void inviteAccept (String teamName, String invite){
         String path = "dungeon." + "team." + teamName;
         List<String>playerInTeam = new ArrayList<>();
+        for (String teamMate : config.getStringList(path + ".player_in_team")){
+            playerInTeam.add(teamMate);
+        }
         playerInTeam.add(invite);
         config.set(path + ".player_in_team", playerInTeam);
         int teamLevel = getLowestTeamLevel(teamName);

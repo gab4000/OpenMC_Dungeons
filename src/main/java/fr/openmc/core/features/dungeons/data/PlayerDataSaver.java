@@ -18,7 +18,7 @@ public class PlayerDataSaver implements Listener {
         this.plugin = plugin;
     }
 
-    //TODO utiliser la DB plus tard si besoin
+    //TODO utiliser la DB plus tard
 
     public void savePlayerData(Player player, String dimensionName) {
 

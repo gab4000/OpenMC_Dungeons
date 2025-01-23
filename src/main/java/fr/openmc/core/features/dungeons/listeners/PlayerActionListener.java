@@ -84,7 +84,6 @@ public class PlayerActionListener implements Listener {
 
         config.set(path, null);
         saveReloadConfig();
-
     }
 
     @EventHandler

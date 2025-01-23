@@ -5,8 +5,8 @@ import dev.xernas.menulib.utils.InventorySize;
 import dev.xernas.menulib.utils.ItemBuilder;
 import fr.openmc.core.OMCPlugin;
 import fr.openmc.core.features.dungeons.DungeonList;
-import fr.openmc.core.utils.cooldown.DynamicCooldown;
-import fr.openmc.core.utils.cooldown.DynamicCooldownManager;
+import fr.openmc.core.utils.chronometer.Chronometer;
+import fr.openmc.core.utils.chronometer.ChronometerType;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
@@ -102,14 +102,15 @@ public class ExplorerMenu extends Menu {
                                     if (Bukkit.getWorld("Dungeons") != null) {
                                         config.set(path + ".available", false);
                                         for (String playerInTeam : config.getStringList(basePath + ".player_in_team")){
-                                            Player target = Bukkit.getPlayer(playerInTeam);
+                                            Player teamMate = Bukkit.getPlayer(playerInTeam);
                                             Location tp = new Location(Bukkit.getWorld("Dungeons"), x, y, z);
-                                            String dungeonPath = "dungeon." + "players_in_dungeon." + target.getName();
-                                            target.teleport(tp);
-                                            config.set(dungeonPath + ".dungeon", dungeons);
+                                            String dungeonPath = "dungeon." + "players_in_dungeon." + teamMate.getName();
+                                            teamMate.teleport(tp);
+                                            config.set(dungeonPath + ".dungeon", String.valueOf(dungeons));
                                             config.set(dungeonPath + ".places", dungeon);
                                             config.set(dungeonPath + ".states", "alive");
                                             config.set(basePath + ".remain", dungeons.getKillToFinishCondition());
+                                            Chronometer.start(teamMate, "dungeons", dungeons.getTime(), ChronometerType.ACTION_BAR, "temps : %sec%", ChronometerType.ACTION_BAR, "%null%");
                                         }
                                         saveReloadConfig();
                                     } else {
@@ -151,10 +152,13 @@ public class ExplorerMenu extends Menu {
                         String dungeonPath = "dungeon." + "players_in_dungeon." + player.getName();
                         player.teleport(tp);
                         config.set(path + ".available", false);
-                        config.set(dungeonPath + ".dungeon", dungeons);
+                        config.set(dungeonPath + ".dungeon", String.valueOf(dungeons));
                         config.set(dungeonPath + ".places", dungeon);
                         config.set(dungeonPath + ".states", "alive");
-                        dungeonSoloCondition.put(player.getUniqueId(), dungeons.getKillToFinishCondition());
+                        if (dungeons.getKillToFinishCondition()!=-1){
+                            dungeonSoloCondition.put(player.getUniqueId(), dungeons.getKillToFinishCondition());
+                        }
+                        Chronometer.start(player, "dungeons", dungeons.getTime(), ChronometerType.ACTION_BAR, "temps : %sec%", ChronometerType.ACTION_BAR, "%null%");
                         saveReloadConfig();
                     } else {
                         MessagesManager.sendMessageType(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);

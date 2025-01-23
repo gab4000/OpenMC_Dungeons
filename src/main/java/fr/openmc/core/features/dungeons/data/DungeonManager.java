@@ -34,7 +34,7 @@ public class DungeonManager {
     public DungeonManager(OMCPlugin plugin) {
         this.plugin = plugin;
         this.server = plugin.getServer();
-        DungeonSpawn = new Location(Bukkit.getWorld("Dungeons"), 0, 100, 0);
+        DungeonSpawn = new Location(Bukkit.getWorld("Dungeons"), 0.5, 60 , 0.5);
 
         CommandsManager.getHandler().register(
                 new DungeonsCommands(plugin)

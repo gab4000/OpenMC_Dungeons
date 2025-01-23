@@ -6,17 +6,17 @@ import lombok.Getter;
 public enum DungeonList {
     /**
      *  -1 no finish condition
-     *  time in milliseconds ( check the DynamicCooldownManager : getRemaining )
+     *  time in second
      */
 
-    dungeon_training("Training dungeon",-1, 0),
-    dungeon_remember("remember dungeon",30, 300000),;
+    dungeon_training("Training dungeon",-1, 60*5),
+    dungeon_remember("remember dungeon",30, 60*5),;
 
     private final String DungeonName;
     private final int KillToFinishCondition;
-    private final long time;
+    private final int time;
 
-    DungeonList(String dungeonName, int i, long time) {
+    DungeonList(String dungeonName, int i, int time) {
         DungeonName = dungeonName;
         this.KillToFinishCondition = i;
         this.time = time;

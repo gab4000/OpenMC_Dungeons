@@ -23,9 +23,10 @@ public class DungeonLevelsListener implements Listener {
     @EventHandler
     private void onPlayerJoin (PlayerJoinEvent e){
         Player player = e.getPlayer();
-        if (!dl_config.contains("player_info." + player.getName())){
+        if (!dl_config.contains("player_info." + player.getName()) || !dl_config.contains("player_xp." + player.getName()) || !dl_config.contains("skills_point." + player.getName())){
             dl_config.set("player_xp." + player.getName(), 0);
             dl_config.set("player_info." + player.getName(), true);
+            dl_config.set("skills_point." + player.getName(), 0);
             saveReloadDLConfig();
         }
     }
@@ -41,7 +42,6 @@ public class DungeonLevelsListener implements Listener {
         if (killer instanceof Player && killer != null) {
             Player player = Bukkit.getPlayer(killer.getUniqueId());
             int xp = MOBIDS.getExpByName(entity.getCustomName());
-            int base_xp = dl_config.getInt("player_xp." + player.getName());
 
             if (!dl_file.exists()){
                 plugin.getLogger().severe("dl_file not exist ot not correctly recognise");
@@ -50,7 +50,7 @@ public class DungeonLevelsListener implements Listener {
             }
 
             if (xp == 0 || dl_config.getBoolean("player_info." + player.getName())){player.sendMessage(xp + " xp");}
-            dl_config.set("player_xp." + player.getName(), base_xp + xp);
+            giveDungeonXP(player, xp);
             saveReloadDLConfig();
         }
     }
@@ -81,5 +81,17 @@ public class DungeonLevelsListener implements Listener {
             }
         }
         return 0;
+    }
+
+    public static void giveDungeonXP(Player player, int xp) {
+        int lastLevel = getPlayerDungeonLevels(player);
+        dl_config.addDefault("player_xp." + player.getName(), xp);
+        if (lastLevel < getPlayerDungeonLevels(player)){
+            giveSkillsPoint(player, 1);
+        }
+    }
+
+    public static void giveSkillsPoint (Player player, int point) {
+        dl_config.addDefault("skills_point." + player.getName(), point);
     }
 }
