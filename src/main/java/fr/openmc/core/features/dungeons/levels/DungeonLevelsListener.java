@@ -94,4 +94,8 @@ public class DungeonLevelsListener implements Listener {
     public static void giveSkillsPoint (Player player, int point) {
         dl_config.addDefault("skills_point." + player.getName(), point);
     }
+
+    public static int getSkillsPoint (Player player) {
+        return dl_config.getInt("skills_point." + player.getName());
+    }
 }
