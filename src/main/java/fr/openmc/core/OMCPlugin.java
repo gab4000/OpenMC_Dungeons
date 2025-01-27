@@ -56,7 +56,7 @@ public final class OMCPlugin extends JavaPlugin {
         ContestPlayerManager contestPlayerManager = new ContestPlayerManager();
         new SpawnManager(this);
         new CityManager();
-        new ListenersManager(this);
+        new ListenersManager();
         new EconomyManager();
 	    new MailboxManager();
 	    contestPlayerManager.setContestManager(contestManager); // else ContestPlayerManager crash because ContestManager is null
@@ -64,6 +64,7 @@ public final class OMCPlugin extends JavaPlugin {
 	    new MotdUtils(this);
 	    new DungeonManager(this);
 		this.passiveSkillsManager = new PassiveSkillsManager();
+		this.passiveSkillsManager.activateSkills(this);
         translationManager = new TranslationManager(this, new File(this.getDataFolder(), "translations"), "fr");
         translationManager.loadAllLanguages();
 
@@ -82,7 +83,7 @@ public final class OMCPlugin extends JavaPlugin {
             }
         }
 
-        if (config.getConfigurationSection("dungeon." + "team") != null){ //TODO probleme ici : "path is null"
+        if (config.getConfigurationSection("dungeon." + "team") != null){ //TODO problème ici : "path is null"
             try {
                 config.set("dungeon." + "team", null);
                 getLogger().info("Dungeon Team reset");
@@ -90,6 +91,8 @@ public final class OMCPlugin extends JavaPlugin {
                 getLogger().info("Error during the reset of the team");
             }
         }
+		
+		this.passiveSkillsManager.deactivateSkills();
 
         //TODO remettre tous les donjons a 0
 

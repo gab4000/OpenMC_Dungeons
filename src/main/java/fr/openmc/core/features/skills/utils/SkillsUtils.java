@@ -28,16 +28,15 @@ public class SkillsUtils {
 			hotbar.add(player.getInventory().getItem(i));
 			player.getInventory().setItem(i, new ItemStack(Material.AIR));
 		}
-		player.getInventory().setItem(8, new ItemStack(Material.CHERRY_DOOR));
 		hotbarMap.put(player.getUniqueId(), hotbar);
 	}
 	
 	public static void placeSkills(Player player) {
-		player.getInventory().setItem(0, CustomStack.getInstance("skills:night_vision_scroll").getItemStack());
-		player.getInventory().setItem(1, CustomStack.getInstance("skills:mine_boost_scroll").getItemStack());
-		player.getInventory().setItem(2, CustomStack.getInstance("skills:heal_scroll").getItemStack());
-		player.getInventory().setItem(3, CustomStack.getInstance("skills:ore_detector_scroll").getItemStack());
-		player.getInventory().setItem(4, CustomStack.getInstance("skills:swim_master_scroll").getItemStack());
+		player.getInventory().setItem(0, CustomStack.getInstance("skills:night_vision_skill").getItemStack());
+		player.getInventory().setItem(1, CustomStack.getInstance("skills:mine_boost_skill").getItemStack());
+		player.getInventory().setItem(2, CustomStack.getInstance("skills:heal_skill").getItemStack());
+		player.getInventory().setItem(3, CustomStack.getInstance("skills:ore_detector_skill").getItemStack());
+		player.getInventory().setItem(8, CustomStack.getInstance("_iainternal:icon_back_orange").getItemStack());
 	}
 	
 	public static void restoreHotbar(Player player) {
