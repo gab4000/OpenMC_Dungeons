@@ -5,6 +5,7 @@ import fr.openmc.core.OMCPlugin;
 import fr.openmc.core.features.dungeons.commands.DungeonsCommands;
 import fr.openmc.core.features.dungeons.effects.CorruptionEffect;
 import fr.openmc.core.features.dungeons.menus.ExplorerMenu;
+import fr.openmc.core.features.dungeons.menus.WeeklyShopMenu;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
@@ -30,7 +31,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Objects;
 
-import static fr.openmc.core.features.dungeons.commands.DungeonsCommands.dungeons;
+import static fr.openmc.core.features.dungeons.commands.DungeonsCommands.*;
 import static fr.openmc.core.features.dungeons.data.DungeonManager.*;
 import static fr.openmc.core.features.dungeons.menus.ExplorerMenu.dungeonSoloCondition;
 
@@ -57,6 +58,10 @@ public class PlayerActionListener implements Listener {
                 ExplorerMenu menu = new ExplorerMenu(player);
                 menu.open();
             }
+            if (entity.getCustomName().equals("test")){
+                WeeklyShopMenu menu = new WeeklyShopMenu(player);
+                menu.open();
+            }
         }
     }
 
@@ -64,7 +69,7 @@ public class PlayerActionListener implements Listener {
     public void playerDisconnect (PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        if (player.getWorld() != Bukkit.getWorld("Dungeons")) {
+        if (player.getWorld() != dungeons) {
             return;
         }
 
@@ -74,12 +79,12 @@ public class PlayerActionListener implements Listener {
         String dungeonName = config.getString(path + ".dungeon");
         String dungeonPlace = config.getString(path + ".places");
 
-        if (!IsInTeam(player)){
+        if (!hasDungeonTeam(player)){
             String dungeonPath = "dungeon." + "dungeon_places." + dungeonName + "." + dungeonPlace;
             config.set(dungeonPath + ".available", true);
             dungeonSoloCondition.remove(player.getUniqueId());
         } else {
-            DungeonsCommands.leaveTeam(player.getName());
+            DungeonsCommands.leaveTeam(player);
         }
 
         config.set(path, null);
@@ -144,7 +149,7 @@ public class PlayerActionListener implements Listener {
         if (event.getEntity().getWorld().equals(dungeons)){
             Player player = event.getEntity().getKiller();
             if (event.getEntity()==player || player==null){return;}
-            if (IsInTeam(player)){
+            if (hasDungeonTeam(player)){
                 for (String team : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
                     String path = "dungeon." + "team." + team;
                     if (config.contains(path + player.getName())){
@@ -176,13 +181,13 @@ public class PlayerActionListener implements Listener {
 
     private void SpectatorMode (Player player, PlayerDeathEvent event) {
         if (DungeonsCommands.playerIsInDungeon(player)){
-            if (config.getConfigurationSection("dungeon." + "team.") == null || !IsInTeam(player)){
+            if (config.getConfigurationSection("dungeon." + "team.") == null || !hasDungeonTeam(player)){
                 PlayerLooseDungeon(player);
                 event.setCancelled(true);
                 player.setHealth(player.getAttribute(Attribute.MAX_HEALTH).getDefaultValue());
                 return;
             }
-            if (IsInTeam(player)){
+            if (hasDungeonTeam(player)){
 
                 for (String team : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
                     String path = "dnugeon." + "team." + team + ".player_in_team";
@@ -318,12 +323,5 @@ public class PlayerActionListener implements Listener {
 
     boolean IsAlive (String playerName) {
         return Objects.equals(config.getString("dungeon." + "players_in_dungeon" + playerName + ".states"), "alive");
-    }
-
-    boolean IsInTeam (Player player){
-        if (config.getConfigurationSection("dungeon." + "team.")==null){
-            return false;
-        }
-        return config.contains("dungeon." + "team." + player.getName());
     }
 }

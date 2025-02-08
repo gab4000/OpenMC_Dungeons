@@ -6,17 +6,19 @@ import org.bukkit.inventory.ItemStack;
 
 @Getter
 public enum DungeonItems {
-    start_sword(CustomStack.getInstance("dungeon:start_sword"), CustomStack.getInstance("dungeon:start_sword_break")),
+    start_sword(CustomStack.getInstance("dungeon:start_sword"), CustomStack.getInstance("dungeon:start_sword_break"), 10),
     ;
 
     private final ItemStack item;
     private final ItemStack breakItem;
     private final String itemId;
+    private final int repairCost;
 
-    DungeonItems(CustomStack customStack, CustomStack breakItem) {
+    DungeonItems(CustomStack customStack, CustomStack breakItem, int repairCost) {
         this.item = customStack.getItemStack();
         this.breakItem = breakItem.getItemStack();
         this.itemId = customStack.getId().replace("dungeon:", ""); // Normalisation de l'ID
+        this.repairCost = repairCost;
     }
 }
 

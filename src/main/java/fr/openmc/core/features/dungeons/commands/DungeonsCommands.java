@@ -5,16 +5,20 @@ import fr.openmc.core.commands.utils.SpawnManager;
 import fr.openmc.core.features.dungeons.MOBIDS;
 import fr.openmc.core.features.dungeons.data.PlayerDataSaver;
 import fr.openmc.core.features.dungeons.listeners.MobSpawnZoneListener;
+import fr.openmc.core.features.dungeons.menus.DungeonInventoryMenu;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import revxrsal.commands.annotation.*;
 import revxrsal.commands.bukkit.annotation.CommandPermission;
 
@@ -24,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
 import java.util.*;
 
 import static fr.openmc.core.features.dungeons.data.DungeonManager.*;
@@ -36,12 +41,11 @@ public class DungeonsCommands {
 
     private final PlayerDataSaver playerDataSaver;
     private final Map<UUID, UUID> invitations = new HashMap<>();
+    private final HashMap<UUID, UUID> exitDungeons = new HashMap<>();
     private final OMCPlugin plugin;
+    public static final World world = Bukkit.getWorld("world");// overworld
     MobSpawnZoneListener listener;
     Location spawnLocation = SpawnManager.getInstance().getSpawnLocation();
-    public static final World dungeons = Bukkit.getWorld("Dungeons");
-    public static final World world = Bukkit.getWorld("world");// overworld
-
     FileConfiguration backupConfig;
     File backupFile;
 
@@ -55,12 +59,22 @@ public class DungeonsCommands {
         backupConfig = YamlConfiguration.loadConfiguration(backupFile);
     }
 
+    @Subcommand("lore")
+    @Description("ouvre le livre du lore des dungeons")
+    private void onCommandLore(Player player) {
+        ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta meta = (BookMeta) book.getItemMeta();
+        meta.setTitle("dungeons");
+        meta.setAuthor("Nocolm");
+        meta.addPages(Component.text("")); //TODO rajouter le lore
+    }
+
     @Subcommand("enter")
     @Description("Tp dans le dongeon")
-    private void onCommandEnter(Player player) {
+    private void onCommandEnter(Player player) throws SQLException {
 
         if (player.getWorld() == world ){
-            if (dungeons != null) {
+            if (Bukkit.getWorld("Dungeons") != null) {
                 playerDataSaver.savePlayerData(player, world.getName());
 
                 double x = player.getX();
@@ -105,18 +119,11 @@ public class DungeonsCommands {
                         player.teleport(new Location(world, x, y, z));
                         config.set("dungeon." + "player_spawn_point." + player.getUniqueId(), null);
                         playerDataSaver.loadPlayerData(player, world.getName());
-                        if (config.getConfigurationSection("dungeon." + "team.")!=null){
-                            for (String teamName : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
-                                String path = "dungeon." + "team." + teamName;
-                                if (config.contains(path + player.getName())){
-                                    leaveTeam(teamName);
-                                    break;
-                                }
-                            }
+                        if (hasDungeonTeam(player)){
+                            leaveTeam(player);
                         }
 
                         saveReloadConfig();
-
                     } else {
                         player.teleport(spawnLocation);
                         playerDataSaver.loadPlayerData(player, world.getName());
@@ -145,9 +152,25 @@ public class DungeonsCommands {
             MessagesManager.sendMessageType(player, Component.text("§4Vous ne pouver pas utiliser ceci dans ce monde"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
-        player.teleport(DungeonSpawn);
+        if (exitDungeons.containsKey(player.getUniqueId())){
+            player.teleport(DungeonSpawn);
+            MessagesManager.sendMessageType(player, Component.text("Vous avez quitter votre donjons actuel"), Prefix.DUNGEON, MessageType.WARNING, false);
+            return;
+        }
+
+        if (hasDungeonTeam(player)){
+            // dire que si le joueur quitte le donjons ça team perdera un membre
+        }
+        MessagesManager.sendMessageType(player, Component.text("§4Vous êtes sur le point de quitter le donjon qui est en cours, refaite la commande pour confirmer"), Prefix.DUNGEON, MessageType.WARNING, false);
+        exitDungeons.put(player.getUniqueId(), player.getUniqueId());
         //TODO ajouter une certification de la commande qui s'enleve au bout de 20s
         // si il est en spectateur le mettre en survie
+    }
+
+    @Subcommand("inventory")
+    @Description("ouvre l'inventaire de stockage")
+    private void onCommandInventory(Player player){
+        new DungeonInventoryMenu(player).open();
     }
 
     @Subcommand("team create")
@@ -171,17 +194,8 @@ public class DungeonsCommands {
             return;
         }
 
-        for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
-            String path = basepath + team + "player_in_team.";
-
-            if (config.getStringList(path).contains(playerName)) {
-                MessagesManager.sendMessageType(player,Component.text("§4tu es déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
-                return;
-            }
-        }
-
-        if (config.contains(basepath + playerName)){
-            MessagesManager.sendMessageType(player,Component.text("§4Tu as déjà une team"), Prefix.DUNGEON, MessageType.ERROR, false);
+        if (hasDungeonTeam(player)){
+            MessagesManager.sendMessageType(player,Component.text("§4tu es déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -202,15 +216,14 @@ public class DungeonsCommands {
             return;
         }
 
-        String basepath = "dungeon." + "team.";
-
-        if (config.getConfigurationSection(basepath) == null){
+        if (!hasDungeonTeam(player)){
             MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas de team ou n'es pas déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         String playerName = player.getName();
         String inviteName = invite.getName();
+        String basepath = "dungeon." + "team.";
 
         for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
             String path = basepath + team + "player_in_team.";
@@ -219,11 +232,6 @@ public class DungeonsCommands {
                 MessagesManager.sendMessageType(player,Component.text("§4tu n'es pas le chef de ta team"), Prefix.DUNGEON, MessageType.ERROR, false);
                 return;
             }
-        }
-
-        if (!config.contains(basepath + playerName)){
-            MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas de team ou n'es pas déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
-            return;
         }
 
         if (playerName.equals(inviteName)){
@@ -236,16 +244,8 @@ public class DungeonsCommands {
             return;
         }
 
-        for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
-            String path = basepath + team + "player_in_team.";
 
-            if (config.getStringList(path).contains(inviteName)) {
-                MessagesManager.sendMessageType(player,Component.text("§4le joueur est déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
-                return;
-            }
-        }
-
-        if (config.contains(basepath + inviteName)) {
+        if (hasDungeonTeam(invite)) {
             MessagesManager.sendMessageType(player,Component.text("§4le joueur est déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
@@ -284,13 +284,14 @@ public class DungeonsCommands {
         }
 
         UUID inviterUUID = invitations.get(player.getUniqueId());
+
         if (inviterUUID == null) {
             MessagesManager.sendMessageType(player,Component.text("§4Tu n'as pas reçu d'invitation"), Prefix.DUNGEON, MessageType.ERROR, false);
-            player.sendMessage(inviterUUID);
             return;
         }
 
         Player inviter = Bukkit.getPlayer(inviterUUID);
+
         if (inviter == null || !inviter.isOnline()) {
             MessagesManager.sendMessageType(player,Component.text("§4Le joueur n'est plus en ligne"), Prefix.DUNGEON, MessageType.INFO, false);
             invitations.remove(player.getUniqueId());
@@ -299,6 +300,11 @@ public class DungeonsCommands {
 
         if (playerIsInDungeon(player)){
             MessagesManager.sendMessageType(player,Component.text("§4Vous ne pouvez pas rejoindre une team car vous êtes en plein donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
+            return;
+        }
+
+        if (hasDungeonTeam(player)){
+            MessagesManager.sendMessageType(player,Component.text("§4Vous êtes dékà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -317,12 +323,14 @@ public class DungeonsCommands {
         }
 
         UUID inviterUUID = invitations.get(player.getUniqueId());
+
         if (inviterUUID == null) {
             MessagesManager.sendMessageType(player, Component.text("§4Tu n'as pas reçu d'invitation"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
         Player inviter = Bukkit.getPlayer(inviterUUID);
+
         if (inviter != null && inviter.isOnline()) {
             MessagesManager.sendMessageType(inviter, Component.text("§4" + player.getName() + "a refuser votre invitaion !"), Prefix.DUNGEON, MessageType.INFO, false);
         }
@@ -344,25 +352,8 @@ public class DungeonsCommands {
             return;
         }
 
-        String playerName = player.getName();
-        String basepath = "dungeon." + "team.";
-        boolean inTeam = false;
-
-        if (config.getConfigurationSection(basepath) == null){
+        if (!hasDungeonTeam(player)){
             MessagesManager.sendMessageType(player, Component.text("§4Tu n'as pas de team ou n'es pas déjà dans une team"), Prefix.DUNGEON, MessageType.ERROR, false);
-            return;
-        }
-
-        for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
-            String path = basepath + team + "player_in_team.";
-
-            if (config.getStringList(path).contains(playerName)){
-                inTeam = true;
-            }
-        }
-
-        if (!config.contains("dungeon." + "team." + playerName) && !inTeam){
-            MessagesManager.sendMessageType(player, Component.text("§4Tu n'as pas de team "), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -371,7 +362,7 @@ public class DungeonsCommands {
             return;
         }
 
-        leaveTeam(playerName);
+        leaveTeam(player);
     }
 
     @Subcommand("team info")
@@ -381,7 +372,7 @@ public class DungeonsCommands {
             MessagesManager.sendMessageType(player, Component.text("§4Vous ne pouver pas utiliser ceci dans ce monde"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
-        if (config.getConfigurationSection("dungeon." + "team.") == null || !config.contains("dungeon." + "team." + player.getName())){
+        if (!hasDungeonTeam(player)){
             MessagesManager.sendMessageType(player,Component.text("§4Vous n'avez pas de team"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
@@ -607,21 +598,20 @@ public class DungeonsCommands {
         }
     }
 
-    public static void leaveTeam (String teamName) {
+    public static void leaveTeam (Player player) {
         String basepath = "dungeon." + "team.";
 
-        if (config.contains(basepath + teamName)) {
-            String path = basepath + teamName + ".player_in_team";
+        if (config.contains(basepath + player.getName())) {
+            String path = basepath + player.getName() + ".player_in_team";
 
             for (String playerInTeam : config.getStringList(path)) {
-                Player player = Bukkit.getPlayer(playerInTeam);
-                if ( player != null && !player.getName().equals(teamName)){
+                Player teamMate = Bukkit.getPlayer(playerInTeam);
+                if ( teamMate != null && !teamMate.getName().equals(player.getName())){
                     MessagesManager.sendMessageType(player, Component.text("§4Le chef à dissous la team"), Prefix.DUNGEON, MessageType.INFO, false);
                 }
             }
 
-            config.set(basepath + teamName, null);
-            Player player = Bukkit.getPlayer(teamName);
+            config.set(basepath + player.getName(), null);
             MessagesManager.sendMessageType(player, Component.text("§4Vous avez dissous votre team"), Prefix.DUNGEON, MessageType.INFO, false);
             saveReloadConfig();
             return;
@@ -630,19 +620,21 @@ public class DungeonsCommands {
         for (String team : config.getConfigurationSection(basepath).getKeys(false)) {
             String path = basepath + team + ".player_in_team";
 
-            if (config.getStringList(path).contains(teamName)) {
+            if (config.getStringList(path).contains(player.getName())) {
 
                 for (String playerInTeam : config.getStringList(path)) {
-                    Player player = Bukkit.getPlayer(playerInTeam);
-                    if ( player != null && !player.getName().equals(teamName)){
-                        MessagesManager.sendMessageType(player, Component.text("§4" + teamName + " a quitté la team"), Prefix.DUNGEON, MessageType.INFO, false);
+                    Player teamMate = Bukkit.getPlayer(playerInTeam);
+                    if ( teamMate != null && !teamMate.getName().equals(player.getName())){
+                        MessagesManager.sendMessageType(player, Component.text("§4" + player.getName() + " a quitté la team"), Prefix.DUNGEON, MessageType.INFO, false);
+                    } else {
+                        MessagesManager.sendMessageType(player, Component.text("§4vouas avez quitté la team"), Prefix.DUNGEON, MessageType.INFO, false);
                     }
                 }
 
                 List<String> playerInTeam = config.getStringList(path);
-                playerInTeam.remove(teamName);
+                playerInTeam.remove(player.getName());
                 config.set(path, playerInTeam);
-                int teamLevel = getLowestTeamLevel(teamName);
+                int teamLevel = getLowestTeamLevel(player.getName());
                 if (teamLevel == -1){
                     config.set(path + ".level", "level max");
                 } else {
@@ -779,5 +771,17 @@ public class DungeonsCommands {
 
     public static boolean playerIsInDungeon (Player player) {
         return config.getConfigurationSection("dungeon." + "players_in_dungeon." + player.getName()) != null;
+    }
+
+    public static boolean hasDungeonTeam (Player player){
+        if (config == null || config.getConfigurationSection("dungeon." + "team.")==null){
+            return false;
+        }
+        for (String team : config.getConfigurationSection("dungeon." + "team.").getKeys(false)){
+            if (config.getStringList("dungeon." + "team." + team + ".player_in_team").contains(player.getName())){
+                return true;
+            }
+        }
+        return config.contains("dungeon." + "team." + player.getName());
     }
 }
