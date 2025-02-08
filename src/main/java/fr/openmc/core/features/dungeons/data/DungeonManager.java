@@ -87,7 +87,7 @@ public class DungeonManager {
     public static void init_db(Connection conn) throws SQLException {
         conn.prepareStatement("CREATE TABLE IF NOT EXISTS dungeon (" +
                 "player_uuid VARCHAR(36) PRIMARY KEY, " + // Un seul enregistrement par joueur
-                "map_data BLOB" +  // Stocke la map sous forme de JSON
+                "inventory BLOB" +  // Stocke la map sous forme de JSON
                 ")"
         ).executeUpdate();
         OMCPlugin.getInstance().getLogger().info("Initialisation des maps");
@@ -97,24 +97,24 @@ public class DungeonManager {
      * Début de la partie réaliser avec l'aide de ChatGPT
      * */
 
-    public static Map<Integer, ItemStack> loadMenuFromDatabase(UUID playerUUID, Connection conn) throws SQLException {
-        PreparedStatement statement = conn.prepareStatement("SELECT map_data FROM dungeon WHERE player_uuid = ?");
+    public static Map<Integer, ItemStack> loadInventoryFromDatabase(UUID playerUUID, Connection conn) throws SQLException {
+        PreparedStatement statement = conn.prepareStatement("SELECT inventory FROM dungeon WHERE player_uuid = ?");
         statement.setString(1, playerUUID.toString());
         ResultSet results = statement.executeQuery();
 
         if (results.next()) {
-            String inventoryBase64 = results.getString("map_data");
+            String inventoryBase64 = results.getString("inventory");
             return deserializeInventory(inventoryBase64);
         }
         return new HashMap<>();
     }
 
-    public static void saveMenuToDatabase(UUID playerUUID, Map<Integer, ItemStack> inventory, Connection conn) throws SQLException {
+    public static void saveInventoryToDatabase(UUID playerUUID, Map<Integer, ItemStack> inventory, Connection conn) throws SQLException {
         String inventoryBase64 = serializeInventory(inventory);
 
         PreparedStatement statement = conn.prepareStatement(
-                "INSERT INTO dungeon (player_uuid, map_data) VALUES (?, ?) " +
-                        "ON DUPLICATE KEY UPDATE map_data = VALUES(map_data)");
+                "INSERT INTO dungeon (player_uuid, inventory) VALUES (?, ?) " +
+                        "ON DUPLICATE KEY UPDATE inventory = VALUES(inventory)");
 
         statement.setString(1, playerUUID.toString());
         statement.setString(2, inventoryBase64); // 🔥 Stocke en Base64

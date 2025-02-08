@@ -43,6 +43,7 @@ public class DungeonInventoryMenu extends Menu implements Listener {
 
     @Override
     public void onInventoryClick(InventoryClickEvent inventoryClickEvent) {
+        // TODO faire en sorte que le joueur puisse poser des items dans tt les slots sauf ceux de 45 à 53 ( la derniere ligne )
         if (inventoryClickEvent.getClick().isLeftClick() || inventoryClickEvent.getClick().isRightClick()){
             inventoryClickEvent.setCancelled(false);
         }
@@ -53,22 +54,26 @@ public class DungeonInventoryMenu extends Menu implements Listener {
     public @NotNull Map<Integer, ItemStack> getContent() {
 
         try {
-            map.putAll(loadMenuFromDatabase(player.getUniqueId(), DatabaseManager.getConnection()));
+            map.putAll(loadInventoryFromDatabase(player.getUniqueId(), DatabaseManager.getConnection()));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
+        map.put(45, new ItemBuilder(this, Material.GRAY_STAINED_GLASS_PANE));
+        map.put(46, new ItemBuilder(this, Material.GRAY_STAINED_GLASS_PANE));
         map.put(47, new ItemBuilder(this, Material.PAPER, itemMeta -> {
             itemMeta.setDisplayName("Page précédente");
         }).setCloseButton());
-
+        map.put(48, new ItemBuilder(this, Material.GRAY_STAINED_GLASS_PANE));
         map.put(49, new ItemBuilder(this, Material.PAPER, itemMeta -> {
             itemMeta.setDisplayName("Exit");
         }).setCloseButton());
-
+        map.put(50, new ItemBuilder(this, Material.GRAY_STAINED_GLASS_PANE));
         map.put(51, new ItemBuilder(this, Material.PAPER, itemMeta -> {
             itemMeta.setDisplayName("Page suivante");
         }).setCloseButton());
+        map.put(52, new ItemBuilder(this, Material.GRAY_STAINED_GLASS_PANE));
+        map.put(53, new ItemBuilder(this, Material.GRAY_STAINED_GLASS_PANE));
 
         return map;
     }
@@ -91,7 +96,7 @@ public class DungeonInventoryMenu extends Menu implements Listener {
             }
         }
 
-        saveMenuToDatabase(user.getUniqueId(), map, DatabaseManager.getConnection());
+        saveInventoryToDatabase(user.getUniqueId(), map, DatabaseManager.getConnection());
 
         user.sendMessage("Menu bien identifié et sauvegardé !");
     }
