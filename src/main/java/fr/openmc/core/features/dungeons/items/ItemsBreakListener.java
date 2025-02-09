@@ -19,7 +19,7 @@ public class ItemsBreakListener implements Listener {
 
         CustomStack customStack = CustomStack.byItemStack(brokenItem);
         if (customStack == null) return;
-        for (DungeonItems dungeonItem : DungeonItems.values()) {
+        for (DungeonEquipmentsItems dungeonItem : DungeonEquipmentsItems.values()) {
             if (CustomStack.byItemStack(brokenItem).getId().equals(dungeonItem.getItemId())) {
                 for (int slot = 0; slot < player.getInventory().getSize(); slot++) {
                     ItemStack item = player.getInventory().getItem(slot);
