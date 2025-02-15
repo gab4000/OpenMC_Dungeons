@@ -30,7 +30,7 @@ public class OreDetectorSkill extends ActiveSkill {
 		boolean hasOre = false;
 		
 		if (location.getWorld().getEnvironment().equals(World.Environment.THE_END)) {
-			MessagesManager.sendMessageType(player, Component.text("§3Vous ne pouvez pas activer cette compétence dans l'end"), Prefix.SKILLS, MessageType.INFO, false);
+			MessagesManager.sendMessage(player, Component.text("§3Vous ne pouvez pas activer cette compétence dans l'end"), Prefix.SKILLS, MessageType.INFO, false);
 			return;
 		}
 		
@@ -48,11 +48,11 @@ public class OreDetectorSkill extends ActiveSkill {
 		}
 		
 		if (hasOre) {
-			MessagesManager.sendMessageType(player, Component.text("§2Votre instinct a détécté des minerais proches d'ici"), Prefix.SKILLS, MessageType.SUCCESS, false);
+			MessagesManager.sendMessage(player, Component.text("§2Votre instinct a détécté des minerais proches d'ici"), Prefix.SKILLS, MessageType.SUCCESS, false);
 			player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_STEP, 1, 1);
 		}
 		else {
-			MessagesManager.sendMessageType(player, Component.text("§4Aucun minerai n'a été détécté aux alentours"), Prefix.SKILLS, MessageType.ERROR, false);
+			MessagesManager.sendMessage(player, Component.text("§4Aucun minerai n'a été détécté aux alentours"), Prefix.SKILLS, MessageType.ERROR, false);
 			player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
 		}
 	}

@@ -51,7 +51,7 @@ public class SkillsUtils {
 	
 	public static void useSkill(Player player, SKILLS skills) {
 		skills.getActiveSkill().activeSkill(player);
-		MessagesManager.sendMessageType(player, Component.text("Compétence utilisée"), Prefix.SKILLS, MessageType.SUCCESS, false);
+		MessagesManager.sendMessage(player, Component.text("Compétence utilisée"), Prefix.SKILLS, MessageType.SUCCESS, false);
 	}
 	
 	public static void openMenu(Player player) {

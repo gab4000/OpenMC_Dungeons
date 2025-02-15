@@ -108,7 +108,7 @@ public class PlayerActionListener implements Listener {
         Player trigger = event.getPlayer();
         if (!trigger.isOp() && trigger.getWorld().equals(dungeons)){
             event.setCancelled(true);
-            MessagesManager.sendMessageType(trigger, Component.text("§4vous ne pouvez pas détruire de block"), Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessage(trigger, Component.text("§4vous ne pouvez pas détruire de block"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
     }
 
@@ -117,7 +117,7 @@ public class PlayerActionListener implements Listener {
         Player trigger = event.getPlayer();
         if (!trigger.isOp() && trigger.getWorld().equals(dungeons)){
             event.setCancelled(true);
-            MessagesManager.sendMessageType(trigger, Component.text("§4vous ne pouvez pas posez de block"), Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessage(trigger, Component.text("§4vous ne pouvez pas posez de block"), Prefix.DUNGEON, MessageType.ERROR, false);
         }
     }
 

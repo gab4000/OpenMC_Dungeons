@@ -45,7 +45,7 @@ public class DungeonLevelsListener implements Listener {
 
             if (!dl_file.exists()){
                 plugin.getLogger().severe("dl_file not exist ot not correctly recognise");
-                MessagesManager.sendMessageType(player, Component.text("§4erreur lors de l'optention d'xp"), Prefix.DUNGEON, MessageType.ERROR, false);
+                MessagesManager.sendMessage(player, Component.text("§4erreur lors de l'optention d'xp"), Prefix.DUNGEON, MessageType.ERROR, false);
                 return;
             }
 
@@ -89,7 +89,7 @@ public class DungeonLevelsListener implements Listener {
         if (lastLevel < getPlayerDungeonLevels(player)){
             giveSkillsPoint(player, 1);
             if (getPlayerDungeonLevels(player) == -1){
-                MessagesManager.sendMessageType(player, Component.text("""
+                MessagesManager.sendMessage(player, Component.text("""
                     §8§m§r
                     §7
                     §7Level UP !§7\
@@ -102,7 +102,7 @@ public class DungeonLevelsListener implements Listener {
                 return;
             }
 
-            MessagesManager.sendMessageType(player, Component.text("""
+            MessagesManager.sendMessage(player, Component.text("""
                     §8§m§r
                     §7
                     §7Level UP !§7\

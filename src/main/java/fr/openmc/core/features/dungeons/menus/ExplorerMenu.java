@@ -75,7 +75,7 @@ public class ExplorerMenu extends Menu {
     public static void tpAvailableDungeon(Player player, DungeonList dungeons) {
 
         if (config.getConfigurationSection("dungeon." + "dungeon_places.")==null){
-            MessagesManager.sendMessageType(player, Component.text("§4Erreur lors de la téléportation vers le donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
+            MessagesManager.sendMessage(player, Component.text("§4Erreur lors de la téléportation vers le donjon"), Prefix.DUNGEON, MessageType.ERROR, false);
             return;
         }
 
@@ -114,7 +114,7 @@ public class ExplorerMenu extends Menu {
                                         }
                                         saveReloadConfig();
                                     } else {
-                                        MessagesManager.sendMessageType(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);
+                                        MessagesManager.sendMessage(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);
                                     }
                                     break;
                                 }
@@ -125,7 +125,7 @@ public class ExplorerMenu extends Menu {
                             }
                         }
                     } else {
-                        MessagesManager.sendMessageType(player, Component.text("§4Vous n'êtes pas le chef de votre team"), Prefix.DUNGEON, MessageType.ERROR, false);
+                        MessagesManager.sendMessage(player, Component.text("§4Vous n'êtes pas le chef de votre team"), Prefix.DUNGEON, MessageType.ERROR, false);
                     }
                     return;
                 }
@@ -161,7 +161,7 @@ public class ExplorerMenu extends Menu {
                         Chronometer.start(player, "dungeons", dungeons.getTime(), ChronometerType.ACTION_BAR, "temps : %sec%", ChronometerType.ACTION_BAR, "%null%");
                         saveReloadConfig();
                     } else {
-                        MessagesManager.sendMessageType(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);
+                        MessagesManager.sendMessage(player, Component.text("§4Erreur"), Prefix.DUNGEON, MessageType.ERROR, false);
                     }
                     break;
                 }
