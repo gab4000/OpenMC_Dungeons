@@ -11,6 +11,7 @@ public enum SKILLS {
 	MINE_BOOST("Mine Boost", "skills:mine_boost_skill", "Boost de minage pendant 10 min", 102, 0, new MineBoostSkill()),
 	HEAL("Soin", "skills:heal_skill", "Restaure 3 cœurs instantanément", 103, 0, new HealSkill()),
 	ORE_DETECTOR("Detecteur a minerais", "skills:ore_detector_skill", "Indique si des minerais de trouvent dans un rayon de 4x4x4 blocks", 104, 0, new OreDetectorSkill()),
+	APNEA("Apnée", "skills:apnea_skill", "Augmente le temps qu'on peut passer sous l'eau", 105, 0, new ApneaSkill()),
 	
 	ROLL("Roulade", "skills:roll_skill", "Réduit de 10% les dégâts de chute", 201, 0, RollSkill.class),
 	AGILITY("Agilité", "skills:agility_skill", "Augmente légèrement la vitesse de déplacement", 202, 0, AgilitySkill.class),

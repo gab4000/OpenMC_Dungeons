@@ -1,5 +1,6 @@
 package fr.openmc.core.features.skills.skill.active;
 
+import fr.openmc.core.features.skills.SKILLS;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
 import fr.openmc.core.utils.messages.Prefix;
@@ -22,6 +23,10 @@ public class OreDetectorSkill extends ActiveSkill {
 			Material.IRON_ORE, Material.DEEPSLATE_IRON_ORE,
 			Material.NETHER_QUARTZ_ORE, Material.ANCIENT_DEBRIS,
 	};
+	
+	public OreDetectorSkill() {
+		super(SKILLS.ORE_DETECTOR);
+	}
 	
 	@Override
 	public void activeSkill(Player player) {

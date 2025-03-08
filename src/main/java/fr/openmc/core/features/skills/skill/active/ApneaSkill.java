@@ -5,14 +5,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-public class HealSkill extends ActiveSkill {
+public class ApneaSkill extends ActiveSkill {
 	
-	public HealSkill() {
-		super(SKILLS.HEAL);
+	public ApneaSkill() {
+		super(SKILLS.APNEA);
 	}
 	
 	@Override
 	public void activeSkill(Player player) {
-		player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, 1, 1, false, false, false), true);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.CONDUIT_POWER, 5*MINUTE, 0, false, false, false), true);
 	}
 }
