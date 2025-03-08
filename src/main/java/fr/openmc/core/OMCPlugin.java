@@ -9,6 +9,7 @@ import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
 import fr.openmc.core.features.mailboxes.MailboxManager;
+import fr.openmc.core.features.skills.SkillsManager;
 import fr.openmc.core.features.skills.skill.passive.PassiveSkillsManager;
 import fr.openmc.core.listeners.ListenersManager;
 import fr.openmc.core.utils.LuckPermsAPI;
@@ -63,6 +64,7 @@ public final class OMCPlugin extends JavaPlugin {
 	    contestManager.setContestPlayerManager(contestPlayerManager);
 	    new MotdUtils(this);
 	    new DungeonManager(this);
+		new SkillsManager();
 		this.passiveSkillsManager = new PassiveSkillsManager();
 		this.passiveSkillsManager.activateSkills(this);
         translationManager = new TranslationManager(this, new File(this.getDataFolder(), "translations"), "fr");
@@ -75,6 +77,9 @@ public final class OMCPlugin extends JavaPlugin {
 	public void onDisable() {
 		ContestManager.getInstance().saveContestData();
 		ContestManager.getInstance().saveContestPlayerData();
+		
+		SkillsManager.savePlayerSkills(DatabaseManager.getConnection());
+		
 		if (dbManager != null) {
 			try {
 				dbManager.close();
@@ -93,7 +98,7 @@ public final class OMCPlugin extends JavaPlugin {
         }
 		
 		this.passiveSkillsManager.deactivateSkills();
-
+		
         //TODO remettre tous les donjons a 0
 
         getLogger().info("Plugin désactivé");

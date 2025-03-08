@@ -63,4 +63,11 @@ public enum SKILLS {
 		}
 		return null; // Retourne null si aucune compétence ne correspond
 	}
+	
+	public static SKILLS getSkillById(int id) {
+		for (SKILLS skill : SKILLS.values()) {
+			if (skill.getId() == id) return skill;
+		}
+		return null;
+	}
 }
