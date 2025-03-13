@@ -13,6 +13,8 @@ public class ListenersManager {
                 new SessionsListener(),
                 new JoinMessageListener(),
                 new ClockInfos(),
+                new DisableCreakings(),
+                new ChronometerListener(),
                 //new DisableCreakings(),
                 new SkillsListener()
         );

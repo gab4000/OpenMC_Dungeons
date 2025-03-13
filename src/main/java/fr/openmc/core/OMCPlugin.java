@@ -2,7 +2,9 @@ package fr.openmc.core;
 
 import dev.xernas.menulib.MenuLib;
 import fr.openmc.core.commands.CommandsManager;
+import fr.openmc.core.features.ScoreboardManager;
 import fr.openmc.core.features.city.CityManager;
+import fr.openmc.core.features.city.mascots.MascotsManager;
 import fr.openmc.core.features.contest.managers.ContestManager;
 import fr.openmc.core.features.contest.managers.ContestPlayerManager;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
@@ -56,10 +58,12 @@ public final class OMCPlugin extends JavaPlugin {
         ContestManager contestManager = new ContestManager(this);
         ContestPlayerManager contestPlayerManager = new ContestPlayerManager();
         new SpawnManager(this);
+        new MascotsManager(this); // laisser avant CityManager
         new CityManager();
         new ListenersManager();
         new EconomyManager();
 	    new MailboxManager();
+	    new ScoreboardManager();
 	    contestPlayerManager.setContestManager(contestManager); // else ContestPlayerManager crash because ContestManager is null
 	    contestManager.setContestPlayerManager(contestPlayerManager);
 	    new MotdUtils(this);
@@ -73,17 +77,19 @@ public final class OMCPlugin extends JavaPlugin {
 	    getLogger().info("Plugin activé");
     }
 
-	@Override
-	public void onDisable() {
-		ContestManager.getInstance().saveContestData();
-		ContestManager.getInstance().saveContestPlayerData();
+    @Override
+    public void onDisable() {
+        ContestManager.getInstance().saveContestData();
+        ContestManager.getInstance().saveContestPlayerData();
 		
-		SkillsManager.savePlayerSkills(DatabaseManager.getConnection());
+        MascotsManager.saveFreeClaimMap();
+	    
+	    SkillsManager.savePlayerSkills(DatabaseManager.getConnection());
 		
-		if (dbManager != null) {
-			try {
-				dbManager.close();
-			} catch (SQLException e) {
+        if (dbManager != null) {
+            try {
+                dbManager.close();
+            } catch (SQLException e) {
                 getLogger().severe("Impossible de fermer la connexion à la base de données");
             }
         }

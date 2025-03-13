@@ -1,9 +1,13 @@
 package fr.openmc.core.utils.chronometer;
 
 import fr.openmc.core.OMCPlugin;
+import lombok.Getter;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
@@ -13,6 +17,28 @@ public class Chronometer {
 
     // Map structure: UUID -> (Group -> Time)
     private static final HashMap<UUID, HashMap<String, Integer>> chronometer = new HashMap<>();
+    // new @EventHandler > ChronometerEndEvent
+
+    @Getter
+    public static class ChronometerEndEvent extends Event {
+        private static final HandlerList HANDLERS = new HandlerList();
+        private final Entity entity;
+        private final String group;
+
+        public ChronometerEndEvent(Entity entity, String group) {
+            this.entity = entity;
+            this.group = group;
+        }
+
+        public static HandlerList getHandlerList() {
+            return HANDLERS;
+        }
+
+        @Override
+        public HandlerList getHandlers() {
+            return HANDLERS;
+        }
+    }
 
     /**
      * FOR "start" :
@@ -23,17 +49,18 @@ public class Chronometer {
      * FOR "start" / "stopAll" / "stop" :
      * if you don't want to display a message just put "%null%"
 
-     * @param player player to add
+     * @param entity entity to add
      * @param group Chronometer group
-     * @param time duration
+     * @param time duration in second
      * @param messageType display type
      * @param message to display the time
      * @param finishMessageType display type
      * @param finishMessage message display when the chronometer end normally
      */
-    public static void start(Player player, String group, int time, ChronometerType messageType, String message,ChronometerType finishMessageType, String finishMessage) {
-        UUID playerID = player.getUniqueId();
-        chronometer.computeIfAbsent(playerID, k -> new HashMap<>()).put(group, time);
+    public static void startChronometer(Entity entity, String group, int time, ChronometerType messageType, String message, ChronometerType finishMessageType, String finishMessage) {
+        UUID entityUUID = entity.getUniqueId();
+        chronometer.computeIfAbsent(entityUUID, k -> new HashMap<>()).put(group, time);
+
 
         new BukkitRunnable() {
             @Override
@@ -42,109 +69,134 @@ public class Chronometer {
                     cancel();
                     return;
                 }
-
-                if (!chronometer.containsKey(playerID)) {
+				
+                if (!chronometer.containsKey(entityUUID)) {
                     cancel();
                     return;
                 }
 
-                int remainingTime = chronometer.get(playerID).get(group);
+                int remainingTime = chronometer.get(entityUUID).get(group);
                 String timerMessage = "Il reste : " + remainingTime + "s";
                 if (message!=null){
                     if (!message.contains("%null%")){
                         if (message.contains("%sec%")) {
                             timerMessage = message.replace("%sec%", String.valueOf(remainingTime));
                         }
-                        player.spigot().sendMessage(messageType.getChatMessageType(),new TextComponent(timerMessage));
+                        if (entity instanceof Player player){
+                            player.spigot().sendMessage(messageType.getChatMessageType(),new TextComponent(timerMessage));
+                        }
                     }
                 } else {
-                    player.spigot().sendMessage(messageType.getChatMessageType(),new TextComponent(timerMessage));
+                    if (entity instanceof Player player){
+                        player.spigot().sendMessage(messageType.getChatMessageType(),new TextComponent(timerMessage));
+                    }
                 }
 
 
-                if (timerEnd(playerID, group)) {
-                    player.spigot().sendMessage(finishMessageType.getChatMessageType(), new TextComponent(finishMessage != null ? finishMessage : "Le chronomètre est terminé !"));
-                    chronometer.get(playerID).remove(group);
+                if (timerEnd(entityUUID, group)) {
+                    if (entity instanceof Player player){
+                        player.spigot().sendMessage(finishMessageType.getChatMessageType(), new TextComponent(finishMessage != null ? finishMessage : "Le chronomètre est terminé !"));
+                    }
+                    Bukkit.getPluginManager().callEvent(new ChronometerEndEvent(entity, group));
+                    chronometer.get(entityUUID).remove(group);
+                    if (chronometer.get(entityUUID).isEmpty()){
+                        chronometer.remove(entityUUID);
+                    }
                     cancel();
                     return;
                 }
 
-                chronometer.get(playerID).put(group, remainingTime - 1);
+                chronometer.get(entityUUID).put(group, remainingTime - 1);
             }
         }.runTaskTimer(OMCPlugin.getInstance(), 0, 20);
     }
 
     /**
-     * @param player player who is affect
+     * @param entity entity who is affect
      * @param messageType display type
      * @param message message display when the chronometer is stopped
      */
-    public static void stopAll(Player player,ChronometerType messageType, String message) {
-        UUID playerID = player.getUniqueId();
-        if (chronometer.containsKey(playerID)) {
-            chronometer.remove(playerID);
+    public static void stopAllChronometer(Entity entity, ChronometerType messageType, String message) {
+        UUID entityUUID = entity.getUniqueId();
+        if (chronometer.containsKey(entityUUID)) {
+            chronometer.remove(entityUUID);
             if (message!=null){
                 if (!message.contains("%null%")){
-                    player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent(message));
+                    if (entity instanceof Player player){
+                        player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent(message));
+                    }
                 }
             } else {
-                player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent("chronomètre arrèté"));
+                if (entity instanceof Player player){
+                    player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent("Chronomètre arrêté"));
+                }
             }
         }
     }
 
     /**
-     * @param player player who is affect
+     * @param entity entity who is affect
      * @param group Chronometer group
      * @param messageType display type
      * @param message message display when the chronometer is stopped
      */
-     public static void stop(Player player, String group,ChronometerType messageType, String message) {
-        UUID playerID = player.getUniqueId();
+     public static void stopChronometer(Entity entity, String group, ChronometerType messageType, String message) {
+        UUID entityUUID = entity.getUniqueId();
 
-        if (chronometer.containsKey(playerID) && chronometer.get(playerID).containsKey(group)) {
-            chronometer.get(playerID).remove(group);
+        if (chronometer.containsKey(entityUUID) && chronometer.get(entityUUID).containsKey(group)) {
+            chronometer.get(entityUUID).remove(group);
             if (message!=null){
                 if (!message.contains("%null%")){
-                    player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent(message));
+                    if (entity instanceof Player player){
+                        player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent(message));
+                    }
                 }
             } else {
-                player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent("chronomètre du " + group + " arrèté"));
+                if (entity instanceof Player player){
+                    player.spigot().sendMessage(messageType.getChatMessageType(), new TextComponent("Chronomètre du " + group + " arrêté"));
+                }
             }
 
-            if (chronometer.get(playerID).isEmpty()) {
-                chronometer.remove(playerID);
+            if (chronometer.get(entityUUID).isEmpty()) {
+                chronometer.remove(entityUUID);
             }
         } else {
-            player.sendMessage("§cAucun chronomètre trouvé pour le groupe §e" + group + ".");
+            if (entity instanceof Player player){
+                player.sendMessage("§cAucun chronomètre trouvé pour le groupe §e" + group + ".");
+            }
         }
     }
 
+    public static void listChronometers(Entity entity, Player owner) {
+        UUID entitytUUID = entity.getUniqueId();
 
-    public static void listChronometers(Player target, Player owner) {
-        UUID playerID = target.getUniqueId();
-
-        if (chronometer.containsKey(playerID)) {
+        if (chronometer.containsKey(entitytUUID)) {
             owner.sendMessage("§aChronomètres actifs :");
-            chronometer.get(playerID).forEach((group, time) ->
+            chronometer.get(entitytUUID).forEach((group, time) ->
                     owner.sendMessage(" §e- " + group + ": §6" + time + "s")
             );
         } else {
-            owner.sendMessage("§cVous n'avez aucun chronomètre actif.");
+            owner.sendMessage("§cCe joueur n'a aucun chronomètre actif.");
         }
     }
 
     /**
      * @return the remaining time
      */
-    public static int getRemainingTime (UUID playerID, String group){
-        return chronometer.get(playerID).get(group);
+    public static int getRemainingTime(UUID entityUUID, String group){
+        return chronometer.get(entityUUID).get(group);
     }
 
     /**
      * @return true if chronometer has expired
      */
-    public static boolean timerEnd (UUID playerID, String group){
-        return chronometer.get(playerID).get(group) <= 0;
+    public static boolean timerEnd(UUID entityUUID, String group){
+        return chronometer.get(entityUUID).get(group) <= 0;
     }
+
+    public static boolean containsChronometer(UUID entityUUID, String group) {
+        if (chronometer.containsKey(entityUUID)){
+            return chronometer.get(entityUUID).containsKey(group);
+        }
+        return false;
 }

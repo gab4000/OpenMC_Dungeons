@@ -8,6 +8,7 @@ import fr.openmc.core.features.dungeons.data.DungeonManager;
 import fr.openmc.core.features.economy.EconomyData;
 import fr.openmc.core.features.economy.TransactionsManager;
 import fr.openmc.core.features.mailboxes.MailboxManager;
+import fr.openmc.core.features.city.listeners.CityTypeCooldown;
 import fr.openmc.core.features.skills.SkillsManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,6 +30,7 @@ public class DatabaseManager {
             ContestManager.init_db(connection);
             MailboxManager.init_db(connection);
             EconomyData.init_db(connection);
+            CityTypeCooldown.init_db(connection);
             DungeonManager.init_db(connection);
             SkillsManager.init_db(connection);
         } catch (SQLException e) {
