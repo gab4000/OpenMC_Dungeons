@@ -2,11 +2,9 @@ package fr.openmc.core.utils.customitems;
 
 import fr.openmc.core.commands.CommandsManager;
 import io.papermc.paper.persistence.PersistentDataContainerView;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import javax.annotation.Nullable;
@@ -27,9 +25,14 @@ public class CustomItemRegistry {
 
         // Ici, enregistrer tout les items custom
         new CloseButton();
-        new ContestShell();
         new PreviousPage();
         new NextPage();
+        new AcceptButton();
+        new RefuseButton();
+        new SearchButton();
+
+        new ContestShell();
+        new Aywenite();
     }
 
     public static void register(String name, CustomItem item) {
