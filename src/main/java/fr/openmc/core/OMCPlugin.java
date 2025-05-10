@@ -1,19 +1,24 @@
 package fr.openmc.core;
 
-import dev.xernas.menulib.MenuLib;
-import fr.openmc.core.commands.CommandsManager;
-import fr.openmc.core.features.ScoreboardManager;
+import fr.openmc.api.menulib.MenuLib;
+import fr.openmc.core.features.leaderboards.LeaderboardManager;
+import fr.openmc.core.features.adminshop.AdminShopManager;
+import fr.openmc.core.features.scoreboards.ScoreboardManager;
 import fr.openmc.core.features.city.CityManager;
 import fr.openmc.core.features.city.mascots.MascotsManager;
 import fr.openmc.core.features.contest.managers.ContestManager;
 import fr.openmc.core.features.contest.managers.ContestPlayerManager;
 import fr.openmc.core.features.dungeons.data.DungeonManager;
+import fr.openmc.core.features.economy.BankManager;
 import fr.openmc.core.features.economy.EconomyManager;
 import fr.openmc.core.commands.utils.SpawnManager;
 import fr.openmc.core.features.friend.FriendManager;
 import fr.openmc.core.features.homes.HomeUpgradeManager;
 import fr.openmc.core.features.homes.HomesManager;
+import fr.openmc.core.features.quests.QuestsManager;
+import fr.openmc.core.features.scoreboards.TabList;
 import fr.openmc.core.features.tpa.TPAManager;
+import fr.openmc.core.features.updates.UpdateManager;
 import fr.openmc.core.listeners.CubeListener;
 import fr.openmc.core.features.mailboxes.MailboxManager;
 import fr.openmc.core.features.skills.SkillsManager;
@@ -66,17 +71,25 @@ public class OMCPlugin extends JavaPlugin {
         ContestManager contestManager = new ContestManager(this);
         ContestPlayerManager contestPlayerManager = new ContestPlayerManager();
         new SpawnManager(this);
+        new UpdateManager();
         new MascotsManager(this); // laisser avant CityManager
         new CityManager();
         new ListenersManager();
         new EconomyManager();
         new MailboxManager();
+        new BankManager();
         new ScoreboardManager();
-	    new HomesManager();
-	    new HomeUpgradeManager(HomesManager.getInstance());
-	    new TPAManager();
-	    new FreezeManager();
-	    new FriendManager();
+        new HomesManager();
+        new HomeUpgradeManager(HomesManager.getInstance());
+        new TPAManager();
+        new FreezeManager();
+        new FriendManager();
+        new QuestsManager();
+        new TabList();
+        if (!OMCPlugin.isUnitTestVersion())
+            new LeaderboardManager(this);
+        new AdminShopManager(this);
+
         contestPlayerManager.setContestManager(contestManager); // else ContestPlayerManager crash because ContestManager is null
         contestManager.setContestPlayerManager(contestPlayerManager);
         new MotdUtils(this);
@@ -94,14 +107,14 @@ public class OMCPlugin extends JavaPlugin {
         HomesManager.getInstance().saveHomesData();
         ContestManager.getInstance().saveContestData();
         ContestManager.getInstance().saveContestPlayerData();
-	    
-	    MascotsManager.saveMascots(MascotsManager.mascots);
-	    MascotsManager.saveFreeClaims(MascotsManager.freeClaim);
-	    
+        QuestsManager.getInstance().saveQuests();
+
+        MascotsManager.saveMascots(MascotsManager.mascots);
+        CityManager.saveFreeClaims(CityManager.freeClaim);
+		
 	    SkillsManager.savePlayerSkills(DatabaseManager.getConnection());
 		
         CubeListener.clearCube(CubeListener.currentLocation);
-        
 		if (dbManager != null) {
             try {
                 dbManager.close();

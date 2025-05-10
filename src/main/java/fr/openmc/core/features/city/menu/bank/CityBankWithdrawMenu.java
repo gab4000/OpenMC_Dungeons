@@ -1,15 +1,14 @@
 package fr.openmc.core.features.city.menu.bank;
 
-import de.rapha149.signgui.SignGUI;
-import de.rapha149.signgui.exception.SignGUIVersionException;
-import dev.xernas.menulib.Menu;
-import dev.xernas.menulib.utils.InventorySize;
-import dev.xernas.menulib.utils.ItemBuilder;
+import fr.openmc.api.menulib.Menu;
+import fr.openmc.api.menulib.utils.InventorySize;
+import fr.openmc.api.menulib.utils.ItemBuilder;
+import fr.openmc.api.signgui.SignGUI;
+import fr.openmc.api.signgui.exception.SignGUIVersionException;
 import fr.openmc.core.features.city.CPermission;
 import fr.openmc.core.features.city.City;
 import fr.openmc.core.features.city.CityManager;
 import fr.openmc.core.features.economy.EconomyManager;
-import fr.openmc.core.utils.InputUtils;
 import fr.openmc.core.utils.ItemUtils;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
@@ -95,7 +94,6 @@ public class CityBankWithdrawMenu extends Menu {
             player.closeInventory();
         }));
 
-
         List<Component> loreBankWithdrawHalf;
 
         if (hasPermissionMoneyTake) {
@@ -168,21 +166,7 @@ public class CityBankWithdrawMenu extends Menu {
                         .setType(ItemUtils.getSignType(player))
                         .setHandler((p, result) -> {
                             String input = result.getLine(0);
-
-                            if (InputUtils.isInputMoney(input)) {
-                                double moneyDeposit = InputUtils.convertToMoneyValue(input);
-
-                                if (city.getBalance() < moneyDeposit) {
-                                    MessagesManager.sendMessage(player, Component.text("Ta ville n'a pas assez d'argent en banque"), Prefix.CITY, MessageType.ERROR, false);
-                                } else {
-                                    city.updateBalance(moneyDeposit * -1);
-                                    EconomyManager.getInstance().addBalance(player.getUniqueId(), moneyDeposit);
-                                    MessagesManager.sendMessage(player, Component.text("§d" + EconomyManager.getInstance().getFormattedSimplifiedNumber(moneyDeposit) + "§r" + EconomyManager.getEconomyIcon() + " ont été transférés à votre compte"), Prefix.CITY, MessageType.SUCCESS, false);
-                                }
-                            } else {
-                                MessagesManager.sendMessage(player, Component.text("Veuillez mettre une entrée correcte"), Prefix.CITY, MessageType.ERROR, true);
-                            }
-
+                            city.withdrawCityBank(player, input);
                             return Collections.emptyList();
                         })
                         .build();

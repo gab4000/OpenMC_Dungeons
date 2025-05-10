@@ -1,14 +1,17 @@
 package fr.openmc.core.features.city;
 
+import com.sk89q.worldedit.math.BlockVector2;
+import fr.openmc.core.CommandsManager;
+import fr.openmc.core.OMCPlugin;
+import fr.openmc.core.features.city.commands.*;
 import fr.openmc.core.features.city.events.ChunkClaimedEvent;
 import fr.openmc.core.features.city.events.CityCreationEvent;
+import fr.openmc.core.features.city.listeners.ChestMenuListener;
+import fr.openmc.core.features.city.listeners.CityChatListener;
+import fr.openmc.core.features.city.listeners.CityTypeCooldown;
+import fr.openmc.core.features.city.listeners.ProtectionListener;
 import fr.openmc.core.features.city.mascots.MascotsListener;
 import fr.openmc.core.features.city.mascots.MascotsManager;
-import com.sk89q.worldedit.math.BlockVector2;
-import fr.openmc.core.OMCPlugin;
-import fr.openmc.core.commands.CommandsManager;
-import fr.openmc.core.features.city.commands.*;
-import fr.openmc.core.features.city.listeners.*;
 import fr.openmc.core.utils.chronometer.Chronometer;
 import fr.openmc.core.utils.database.DatabaseManager;
 import org.bukkit.Bukkit;
@@ -29,6 +32,7 @@ public class CityManager implements Listener {
     private static HashMap<String, City> cities = new HashMap<>();
     private static HashMap<UUID, City> playerCities = new HashMap<>();
     public static HashMap<BlockVector2, City> claimedChunks = new HashMap<>();
+    public static HashMap<String, Integer> freeClaim = new HashMap<>();
 
     public CityManager() {
         OMCPlugin.registerEvents(this);
@@ -44,7 +48,7 @@ public class CityManager implements Listener {
                     ResultSet rs = statement.executeQuery();
 
                     while (rs.next()) {
-                        claimedChunks.put(BlockVector2.at(rs.getInt(1), rs.getInt(2)), getCity(rs.getString("city_uuid")));
+                        claimedChunks.put(BlockVector2.at(rs.getInt("x"), rs.getInt("z")), getCity(rs.getString("city_uuid")));
                     }
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -68,8 +72,11 @@ public class CityManager implements Listener {
         OMCPlugin.registerEvents(
                 new ProtectionListener(),
                 new ChestMenuListener(),
-                new MascotsListener()
+                new MascotsListener(),
+                new CityChatListener()
         );
+
+        freeClaim = getAllFreeClaims();
     }
 
     @EventHandler
@@ -88,6 +95,57 @@ public class CityManager implements Listener {
         conn.prepareStatement("CREATE TABLE IF NOT EXISTS city_chests (city_uuid VARCHAR(8) NOT NULL, page TINYINT NOT NULL, content LONGBLOB);").executeUpdate();
         conn.prepareStatement("CREATE TABLE IF NOT EXISTS city_regions (city_uuid VARCHAR(8) NOT NULL, x MEDIUMINT NOT NULL, z MEDIUMINT NOT NULL);").executeUpdate();// Il faut esperer qu'aucun clodo n'ira à 134.217.712 blocks du spawn
         conn.prepareStatement("CREATE TABLE IF NOT EXISTS city_power (city_uuid VARCHAR(8) NOT NULL, power_point INT NOT NULL);").executeUpdate();
+        conn.prepareStatement("CREATE TABLE IF NOT EXISTS free_claim (city_uuid VARCHAR(8) NOT NULL PRIMARY KEY, claim INT NOT NULL);").executeUpdate();
+    }
+
+    public static HashMap<String, Integer> getAllFreeClaims() {
+        HashMap<String, Integer> freeClaims = new HashMap<>();
+
+        String query = "SELECT city_uuid, claim FROM free_claim";
+        try (PreparedStatement statement = DatabaseManager.getConnection().prepareStatement(query);
+             ResultSet rs = statement.executeQuery()) {
+
+            while (rs.next()) {
+                String cityUuid = rs.getString("city_uuid");
+                int claim = rs.getInt("claim");
+                if (claim > 0) {
+                    freeClaims.put(cityUuid, claim);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return freeClaims;
+    }
+
+    public static void saveFreeClaims(HashMap<String, Integer> freeClaims){
+        String query;
+
+        if (OMCPlugin.isUnitTestVersion()) {
+            query = "MERGE INTO free_claim KEY(city_uuid) VALUES (?, ?)";
+        } else {
+            query = "INSERT INTO free_claim (city_uuid, claim) VALUES (?, ?) ON DUPLICATE KEY UPDATE claim = ?";
+        }
+        try (PreparedStatement statement = DatabaseManager.getConnection().prepareStatement(query)) {
+            for (Map.Entry<String, Integer> entry : freeClaims.entrySet()) {
+                if (entry.getValue() > 0) {
+                    statement.setString(1, entry.getKey());
+                    statement.setInt(2, entry.getValue());
+                    statement.setInt(3, entry.getValue());
+                    statement.addBatch();
+                } else {
+                    try (PreparedStatement deleteStatement = DatabaseManager.getConnection().prepareStatement(
+                            "DELETE FROM free_claim WHERE city_uuid = ?")) {
+                        deleteStatement.setString(1, entry.getKey());
+                        deleteStatement.executeUpdate();
+                    }
+                }
+
+            }
+            statement.executeBatch();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static boolean isChunkClaimed(int x, int z) {
@@ -171,26 +229,39 @@ public class CityManager implements Listener {
     public static void forgetCity(String city) {
         try {
             City cityz = cities.remove(city);
+            if (cityz == null) return;
 
-            for (UUID members : cityz.getMembers()){
-                MascotsManager.removeChest(Bukkit.getPlayer(members));
-                if (Chronometer.containsChronometer(members, "Mascot:chest")){
-                    if (Bukkit.getEntity(members) != null){
-                        Chronometer.stopChronometer(Bukkit.getEntity(members), "Mascot:chest", null, "%null%");
+            List<UUID> membersCopy = new ArrayList<>(cityz.getMembers());
+            for (UUID members : membersCopy) {
+                Player member = Bukkit.getPlayer(members);
+                if (member == null) {
+                    member = Bukkit.getOfflinePlayer(members).getPlayer();
+                    if (member == null) {
+                        continue;
                     }
                 }
-                if (Chronometer.containsChronometer(members, "mascotsMove")){
-                    if (Bukkit.getEntity(members) != null){
-                        Chronometer.stopChronometer(Bukkit.getEntity(members), "mascotsMove", null, "%null%");
+
+                MascotsManager.removeChest(member);
+
+                if (Chronometer.containsChronometer(members, "Mascot:chest")) {
+                    if (Bukkit.getEntity(members) != null) {
+                        Chronometer.stopChronometer(member, "Mascot:chest", null, "%null%");
                     }
                 }
+
+                if (Chronometer.containsChronometer(members, "mascotsMove")) {
+                    if (Bukkit.getEntity(members) != null) {
+                        Chronometer.stopChronometer(member, "mascotsMove", null, "%null%");
+                    }
+                }
+
+                cityz.removePlayer(members);
             }
 
             Iterator<BlockVector2> iterator = claimedChunks.keySet().iterator();
             while (iterator.hasNext()) {
                 BlockVector2 vector = iterator.next();
                 City claimedCity = claimedChunks.get(vector);
-
                 if (claimedCity != null && claimedCity.equals(cityz)) {
                     iterator.remove();
                 }
@@ -200,19 +271,21 @@ public class CityManager implements Listener {
             while (playerIterator.hasNext()) {
                 UUID uuid = playerIterator.next();
                 City playerCity = playerCities.get(uuid);
-
                 if (playerCity != null && playerCity.getUUID().equals(city)) {
                     playerIterator.remove();
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        MascotsManager.freeClaim.remove(city);
+        freeClaim.remove(city);
+
         if (CityTypeCooldown.isOnCooldown(city)) {
             CityTypeCooldown.removeCityCooldown(city);
         }
+
         MascotsManager.removeMascotsFromCity(city);
     }
 
@@ -267,8 +340,8 @@ public class CityManager implements Listener {
 
     public static String getCityType(String city_uuid) {
         String type = null;
-
-        if (city_uuid!=null){
+        
+        if (city_uuid != null) {
             try {
                 PreparedStatement statement = DatabaseManager.getConnection().prepareStatement("SELECT type FROM city WHERE uuid = ?");
                 statement.setString(1, city_uuid);
@@ -276,7 +349,7 @@ public class CityManager implements Listener {
                 if (rs.next()) {
                     type = rs.getString("type");
                 }
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
                 return null;
             }
@@ -287,8 +360,8 @@ public class CityManager implements Listener {
 
     public static int getCityPowerPoints(String city_uuid){
        int power_point = 0;
-
-        if (city_uuid!=null){
+        
+        if (city_uuid != null) {
             try {
                 PreparedStatement statement = DatabaseManager.getConnection().prepareStatement("SELECT power_point FROM city_power WHERE city_uuid = ?");
                 statement.setString(1, city_uuid);
@@ -316,7 +389,7 @@ public class CityManager implements Listener {
                 String uuid = resultSet.getString("uuid");
                 uuidList.add(uuid);
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
@@ -325,5 +398,17 @@ public class CityManager implements Listener {
 
     public static void uncachePlayer(UUID uuid) {
         playerCities.remove(uuid);
+    }
+
+    // WARNING: THIS FUNCTION IS VERY EXPENSIVE DO NOT RUN FREQUENTLY IT WILL AFFECT PERFORMANCE IF THERE ARE MANY CITIES SAVED IN THE DB
+    public static void applyAllCityInterests() {
+        try {
+            List<String> cityUUIDs = getAllCityUUIDs();
+            for (String cityUUID : cityUUIDs) {
+                getCity(cityUUID).applyCityInterest();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

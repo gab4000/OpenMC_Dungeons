@@ -1,16 +1,15 @@
 package fr.openmc.core.features.city.menu.bank;
 
-import de.rapha149.signgui.SignGUI;
-import de.rapha149.signgui.exception.SignGUIVersionException;
-import dev.xernas.menulib.Menu;
-import dev.xernas.menulib.utils.InventorySize;
-import dev.xernas.menulib.utils.ItemBuilder;
+import fr.openmc.api.menulib.Menu;
+import fr.openmc.api.menulib.utils.InventorySize;
+import fr.openmc.api.menulib.utils.ItemBuilder;
+import fr.openmc.api.signgui.SignGUI;
+import fr.openmc.api.signgui.exception.SignGUIVersionException;
 import fr.openmc.core.features.city.CPermission;
 import fr.openmc.core.features.city.City;
 import fr.openmc.core.features.city.CityManager;
 import fr.openmc.core.features.city.conditions.CityBankConditions;
 import fr.openmc.core.features.economy.EconomyManager;
-import fr.openmc.core.utils.InputUtils;
 import fr.openmc.core.utils.ItemUtils;
 import fr.openmc.core.utils.messages.MessageType;
 import fr.openmc.core.utils.messages.MessagesManager;
@@ -151,27 +150,14 @@ public class CityBankDepositMenu extends Menu {
             lines[2] = "Entrez votre";
             lines[3] = "montant ci dessus";
 
-            SignGUI gui = null;
+            SignGUI gui;
             try {
                 gui = SignGUI.builder()
                         .setLines(null, lines[1] , lines[2], lines[3])
                         .setType(ItemUtils.getSignType(player))
                         .setHandler((p, result) -> {
                             String input = result.getLine(0);
-
-                            if (InputUtils.isInputMoney(input)) {
-                                double moneyDeposit = InputUtils.convertToMoneyValue(input);
-
-                                if (EconomyManager.getInstance().withdrawBalance(player.getUniqueId(), moneyDeposit)) {
-                                    city.updateBalance(moneyDeposit);
-                                    MessagesManager.sendMessage(player, Component.text("Tu as transféré §d" + EconomyManager.getInstance().getFormattedSimplifiedNumber(moneyDeposit) + "§r" + EconomyManager.getEconomyIcon() + " à ta ville"), Prefix.CITY, MessageType.ERROR, false);
-                                } else {
-                                    MessagesManager.sendMessage(player, MessagesManager.Message.MONEYPLAYERMISSING.getMessage(), Prefix.CITY, MessageType.ERROR, false);
-                                }
-                            } else {
-                                MessagesManager.sendMessage(player, Component.text("Veuillez mettre une entrée correcte"), Prefix.CITY, MessageType.ERROR, true);
-                            }
-
+                            city.depositCityBank(player, input);
                             return Collections.emptyList();
                         })
                         .build();

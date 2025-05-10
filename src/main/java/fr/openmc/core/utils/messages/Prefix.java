@@ -19,8 +19,13 @@ public enum Prefix {
     QUESTS("<gradient:#FCD05C:#FAEDCB>ǫᴜᴇѕᴛѕ</gradient>"),
     HOME("<gradient:#80EF80:#9aec9a>ʜᴏᴍᴇ</gradient>"),
     FRIEND("<gradient:#68E98B:#0EFF6D>ꜰʀɪᴇɴᴅ</gradient>"),
+    QUEST("<gradient:#4E76E3:#1A51E7>ǫᴜᴇѕᴛ</gradient>"),
+    BANK("<gradient:#084CFB:#ADB6FD>ʙᴀɴᴋ</gradient>"),
+    ADMINSHOP("<gradient:#EE2222:#F04949>ᴀᴅᴍɪɴꜱʜᴏᴘ</gradient>"),
+    DEATH("<gradient:#FF0000:#FF7F7F>☠</gradient>"),
 	DUNGEON("<gradient:#FF8400:#FCD05C>☠ ᴅᴜɴɢᴇᴏɴ ☠</gradient>"),
-	SKILLS("<gradient:#6BF5D7:#068669>ѕᴋɪʟʟѕ</gradient>");
+	SKILLS("<gradient:#6BF5D7:#068669>ѕᴋɪʟʟѕ</gradient>"),
+    ;
 
     @Getter private final String prefix;
     Prefix(String prefix) {

@@ -1,12 +1,17 @@
 package fr.openmc.core.utils;
 
+import fr.openmc.core.OMCPlugin;
+import fr.openmc.core.listeners.UserUnloadListener;
 import lombok.Getter;
+import me.clip.placeholderapi.PlaceholderAPI;
+import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.query.QueryOptions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -22,9 +27,10 @@ public class LuckPermsAPI {
             hasLuckPerms = true;
         }
 
-        RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-        if (provider != null) {
-            api = provider.getProvider();
+        api = OMCPlugin.getInstance().getServer().getServicesManager().load(LuckPerms.class);
+
+        if (api != null) {
+            UserUnloadListener.register(OMCPlugin.getInstance(), api);
         }
     }
 
@@ -40,5 +46,28 @@ public class LuckPermsAPI {
 
         String prefix = user.getCachedData().getMetaData(QueryOptions.defaultContextualOptions()).getPrefix();
         return Objects.requireNonNullElse(prefix, "");
+    }
+
+    public static String getFormattedPAPIPrefix(Player player) {
+        if (!hasLuckPerms) return "";
+
+        String prefix = getPrefix(player);
+        if (prefix == null || prefix.isEmpty()) return "";
+        String formattedPrefix = prefix.replace("&", "§");
+        formattedPrefix = formattedPrefix.replaceAll(":([a-zA-Z0-9_]+):", "%img_$1%");
+
+        return PlaceholderAPI.setPlaceholders(player, formattedPrefix) + " ";
+    }
+
+    public static @NotNull Component getFormattedPAPIPrefix(Group group) {
+        if (!hasLuckPerms) return Component.empty();
+
+        String prefix = group.getCachedData().getMetaData(QueryOptions.defaultContextualOptions()).getPrefix();
+        if (prefix == null || prefix.isEmpty()) return Component.empty();
+
+        String formattedPrefix = prefix.replace("&", "§");
+        formattedPrefix = formattedPrefix.replaceAll(":([a-zA-Z0-9_]+):", "%img_$1%");
+
+        return Component.text(PlaceholderAPI.setPlaceholders(null, formattedPrefix) + " ");
     }
 }
