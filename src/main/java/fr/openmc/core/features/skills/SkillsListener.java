@@ -1,8 +1,10 @@
 package fr.openmc.core.features.skills;
 
 import dev.lone.itemsadder.api.CustomStack;
+import fr.openmc.core.features.skills.events.ActiveSkillEvent;
 import fr.openmc.core.features.skills.utils.SkillStateManager;
 import fr.openmc.core.features.skills.utils.SkillsUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -21,6 +23,12 @@ public class SkillsListener implements Listener {
 	 * -------------------------------------------------- ACTIVE SKILLS -------------------------------------------------
 	 */
 	
+	/**
+	 * This method is called when a player interacts with an item.
+	 * It checks if the item is a skills wand or a skills paper and performs the corresponding action.
+	 *
+	 * @param e The PlayerInteractEvent that was triggered.
+	 */
 	@EventHandler
 	public void onWandUse(PlayerInteractEvent e) {
 		Player player = e.getPlayer();
@@ -58,6 +66,12 @@ public class SkillsListener implements Listener {
 		}
 	}
 	
+	/**
+	 * This method is called when a player uses the skills wand.
+	 * It opens the skills menu or saves the player's hotbar and places the skills.
+	 *
+	 * @param player The player who used the wand.
+	 */
 	private void useWand(Player player) {
 		if (player.isSneaking()) {
 			SkillsUtils.openMenu(player);
@@ -68,13 +82,17 @@ public class SkillsListener implements Listener {
 		}
 	}
 	
+	/**
+	 * This method is called when a player uses a skill.
+	 * It triggers the ActiveSkillEvent and uses the skill.
+	 *
+	 * @param player The player who used the skill.
+	 * @param skills The skill that was used.
+	 */
 	private void useSkill(Player player, SKILLS skills) {
+		Bukkit.getPluginManager().callEvent(new ActiveSkillEvent(player, skills.getActiveSkill()));
 		SkillsUtils.useSkill(player, skills);
 		SkillsUtils.restoreHotbar(player);
 		skillStateManager.setSkillMode(player.getUniqueId(), false);
 	}
-	
-	/*
-	 * ----------------------------------------------- PASSIVE SKILLS ---------------------------------------------------
-	 */
 }

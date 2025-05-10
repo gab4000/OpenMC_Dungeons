@@ -13,6 +13,7 @@ public class MineBoostSkill extends ActiveSkill {
 	
 	@Override
 	public void activeSkill(Player player) {
-		player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 10*MINUTE, 0, false, false, false), true);
+		// Apply Haste effect for 10 minutes
+		player.addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 10 * MINUTE, 0, false, false, false), true);
 	}
 }

@@ -14,11 +14,14 @@ public class AgilitySkill extends PassiveSkill {
 		this.event = new Listener() {
 			@EventHandler
 			public void onPlayerMove(PlayerMoveEvent e) {
+				// Check if the player is on the ground
 				if (! e.getPlayer().isOnGround()) return;
 				
+				// Check if the player has the skill
 				Player player = e.getPlayer();
-				
 				if (doesntHaveSkill(player)) return;
+				
+				// Increase the player's walk speed by 15%
 				player.setWalkSpeed(0.2f * 1.15f);
 			}
 		};

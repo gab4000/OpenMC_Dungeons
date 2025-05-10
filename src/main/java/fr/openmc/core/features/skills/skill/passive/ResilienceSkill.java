@@ -14,12 +14,15 @@ public class ResilienceSkill extends PassiveSkill {
 		this.event = new Listener() {
 			@EventHandler
 			public void onPlayerDamage(EntityDamageByEntityEvent e) {
+				// Check if the damager is a player
 				if (! (e.getDamager() instanceof Player)) return;
 				
+				// Check if the player has the skill
 				Player player = ((Player) e.getDamager()).getPlayer();
 				if (player == null) return;
 				if (doesntHaveSkill(player)) return;
 				
+				// Increase the damage by 5%
 				e.setDamage(e.getDamage() * 1.05);
 			}
 		};

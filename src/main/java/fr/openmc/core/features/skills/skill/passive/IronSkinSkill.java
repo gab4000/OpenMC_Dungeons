@@ -11,6 +11,7 @@ import java.util.Set;
 
 public class IronSkinSkill extends PassiveSkill {
 	
+	/// The damage causes that are ignored by the skill
 	private static final Set<EntityDamageEvent.DamageCause> IGNORED_CAUSES = EnumSet.of(
 			EntityDamageEvent.DamageCause.DROWNING,
 			EntityDamageEvent.DamageCause.FALL,
@@ -36,12 +37,15 @@ public class IronSkinSkill extends PassiveSkill {
 		this.event = new Listener() {
 			@EventHandler
 			public void onPlayerDamage(EntityDamageEvent e) {
+				// Check the player, causes and damage
 				if (! (e.getEntity() instanceof Player player)) return;
-				if (IGNORED_CAUSES.contains(e.getCause())) return;
 				if (e.getDamage() == 0) return;
+				if (IGNORED_CAUSES.contains(e.getCause())) return;
 				
+				// Check if the player has the skill
 				if (doesntHaveSkill(player)) return;
 				
+				// Reduce the damage
 				e.setDamage(e.getDamage() * (1 - (Math.max(3, 9 - ((4 * e.getDamage()) / 8))) / 25));
 			}
 		};

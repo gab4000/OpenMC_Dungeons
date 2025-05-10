@@ -13,6 +13,7 @@ public class HealSkill extends ActiveSkill {
 	
 	@Override
 	public void activeSkill(Player player) {
+		// Apply instant health effect
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INSTANT_HEALTH, 1, 1, false, false, false), true);
 	}
 }

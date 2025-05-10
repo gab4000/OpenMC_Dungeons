@@ -13,6 +13,7 @@ public class NightVisionSkill extends ActiveSkill {
 	
 	@Override
 	public void activeSkill(Player player) {
-		player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 5*MINUTE, 0, false, false, false), true);
+		// Apply the night vision effect to the player for 5 minutes
+		player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 5 * MINUTE, 0, false, false, false), true);
 	}
 }
